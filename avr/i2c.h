@@ -7,8 +7,8 @@
 #define I2C_INTERRUPT_CLEAR_MASK 0x80U//used for clearing I2C interrupt flag 
 #define I2C_WRITING 0x60U //status code for receiving an I2C byte	
 #define I2C_READING 0xA8U //status code for receipt of ACK after a write to the PC
-#define DATA_WAITING 1U;
-#define NOT_DATA_WAITING 0U;
+#define DATA_WAITING 1U
+#define NOT_DATA_WAITING 0U
 //compile with -D SLAVE_ONE if compiling for first slave, SLAVE_TWO if compiling for second
 #ifdef SLAVE_ONE
 	#define I2C_ADDR 0x02U;//i2c slave address

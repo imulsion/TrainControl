@@ -30,6 +30,19 @@ ISR(I2C_vect) //I2C interrupt handler
 int main (void)
 {
 	I2CInit();//initialise I2C interface
+	char i2cData;
+	for(;;)
+	{
+		if(DATA_WAITING == dataReady)
+		{
+			i2cData = (char)globalData;	
+			dataReady = NOT_DATA_WAITING;
+			if('l' == i2cData)
+			{
+				PORTB ^= 0x01;
+			}
+		}
+	}
 	return 0;
 }
 

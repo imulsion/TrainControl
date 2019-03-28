@@ -1,3 +1,3 @@
 cd avr
-avrdude -p m8 -c c232hm -U w:flash:i2c.hex -v
+avrdude -c c232hm -p m8 -U flash:w:i2c.hex -v
 cd ..
