@@ -47,6 +47,10 @@ int main()
 						std::cout<<"Error during transmission"<<std::endl;
 					}
 				}
+				else
+				{
+					std::cout<<"Error during transmission"<<std::endl;
+				}
 			}
 		}
 
