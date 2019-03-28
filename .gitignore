@@ -1,0 +1,8 @@
+*.exe
+*.docx
+*.un~
+*.cpp~
+*.h~
+*.swp
+*.c~
+*.bat~
