@@ -1,8 +1,6 @@
 #define F_CPU 8000000UL
 #define ERROR_PATTERN 0xAAU //error bit pattern is 0b10101010
-#define PORTC_IO_CONFIG 0x3FU //enable input on PC4 and PC5 for internal pull-ups
-#define I2C_CONTROL_CONFIG 0x45U //I2C control register configuration bits
-#define GLOBAL_INTERRUPT_ENABLE
+#define I2C_CONTROL_CONFIG 0xC5U //I2C control register configuration bits
 #define I2C_vect TWI_vect //AVR uses TWI (two-wire interface) to avoid I2C copyright. Create alias for interrupt vector here
 #define I2C_INTERRUPT_CLEAR_MASK 0x80U//used for clearing I2C interrupt flag 
 #define I2C_WRITING 0x60U //status code for receiving an I2C byte	

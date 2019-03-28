@@ -447,11 +447,11 @@ FT_STATUS WriteAddr(FT_HANDLE* handle, uint8_t data, bool readNWrite, bool& succ
 	if(readNWrite)
 	{
 		//cast to uint8_t to comply with MISRA C++ Rule 5-0-10
-		nData = static_cast<uint8_t>(nData << (magic::address::DATA_SHIFT_AMOUNT | magic::address::DATA_READ_MASK));
+		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) | magic::address::DATA_READ_MASK));
 	}
 	else
 	{
-		nData = static_cast<uint8_t>(nData << (magic::address::DATA_SHIFT_AMOUNT & magic::address::DATA_WRITE_MASK));
+		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) & magic::address::DATA_WRITE_MASK));
 	}
 	return WriteByte(handle,nData,success); 
 }
