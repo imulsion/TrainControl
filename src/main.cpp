@@ -59,7 +59,7 @@ int main()
 	if(FT_OK != deviceStatus)
 	{
 		std::cout<<"Termination error. Press any key to continue..."<<std::endl;
-		getchar();
+		cin.get();
 	}
 	
 	
