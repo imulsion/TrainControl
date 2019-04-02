@@ -36,7 +36,7 @@ int main()
 			if('l' == input)
 			{
 				deviceStatus |= SetI2CStart(&deviceHandle);
-				deviceStatus |= WriteAddr(&deviceHandle,0x02,true,success);
+				deviceStatus |= WriteAddr(&deviceHandle,0x01,false,success);
 				if(success)
 				{
 					success = false;
@@ -44,12 +44,12 @@ int main()
 					deviceStatus |= SetI2CStop(&deviceHandle);
 					if(!success || (FT_OK != deviceStatus))
 					{
-						std::cout<<"Error during transmission"<<std::endl;
+						std::cout<<"Error during byte transmission"<<std::endl;
 					}
 				}
 				else
 				{
-					std::cout<<"Error during transmission"<<std::endl;
+					std::cout<<"Error during address transmission. Code: "<<deviceStatus<<std::endl;
 				}
 			}
 		}
