@@ -19,17 +19,17 @@ namespace magic
 	,		     EVT_CHAR_EN		 = 0U
 	,		     ERR_CHAR_EN		 = 0U
 	//magic numbers for MPSSE configuration
-	,                    DIVIDE_DISABLE 		 = 0x8AU
-        ,		     ADAPTIVE_CLK_DISABLE 	 = 0x97U
+	,                    DIVIDE_DISABLE 		 = 0x8BU
+        ,		     ADAPTIVE_CLK_CONFIG	 = 0x97U
 	,		     THREE_PHASE_CLK_ENABLE 	 = 0x8CU
 	,		     DRIVE_ZERO_ENABLE 		 = 0x9EU
 	,		     DRIVE_ZERO_LOWER 		 = 0x07U
 	,		     DRIVE_ZERO_UPPER 		 = 0x00U
-	,		     DISABLE_LOOPBACK 		 = 0x85U
+	,		     DISABLE_LOOPBACK 		 = 0x85U;
 	
 	//magic numbers for MPSSE clock configuration
-	,		     CLK_DIVIDER 		 = 0xCBU
-	,		     CMD_SET_DIVIDER 		 = 0x86U
+	const uint16_t CLK_DIVIDER 		     = 0x0027U;
+	const uint8_t  CMD_SET_DIVIDER 		 = 0x86U
 	,		     SET_DIVIDER_LOW 		 = CLK_DIVIDER & 0xFFU
 	,		     SET_DIVIDER_HIGH 		 = (CLK_DIVIDER >> 8U) & 0xFFU;
 
@@ -47,8 +47,8 @@ namespace magic
 	namespace start
 	{
 		const uint8_t       ADBUS_DIRECTION 	 = 0x80U
-		,		    ADBUS_DATA 		 = 0xFDU
-		,		    ADBUS_CLOCK 	 = 0xFCU
+		,		    ADBUS_DATA 		 = 0xDDU
+		,		    ADBUS_CLOCK 	 = 0xDCU
 		,		    ADBUS_LINE_CONFIG 	 = 0xFBU
 		,		    ACBUS_DIRECTION 	 = 0x82U
 		,		    ACBUS_DATA 		 = 0xBFU
@@ -59,9 +59,9 @@ namespace magic
 	namespace stop
 	{
 		const uint8_t       ADBUS_DIRECTION 	 = 0x80U
-		,		    ADBUS_DATA1		 = 0xFCU
-		,		    ADBUS_DATA2		 = 0xFDU
-		,		    ADBUS_DATA3		 = 0xFFU
+		,		    ADBUS_DATA1		 = 0xDCU
+		,		    ADBUS_DATA2		 = 0xDDU
+		,		    ADBUS_DATA3		 = 0xDFU
 		,		    ADBUS_LINE_CONFIG 	 = 0xFBU
 		,		    ACBUS_DIRECTION 	 = 0x82U
 		,		    ACBUS_DATA 		 = 0xFFU
@@ -71,39 +71,39 @@ namespace magic
 	//magic numbers for reading a byte
 	namespace read
 	{
-		const uint8_t       READ_DATA_CMD        = 0x20
-		,		    READ_LENGTH 	 = 0x00
-		,		    SEND_NAK_CMD         = 0x13
-		,		    NAK_BYTE 		 = 0xFF
-		,		    ADBUS_DIRECTION      = 0x80
-		,		    ADBUS_DATA	         = 0xFE
-		,		    ADBUS_LINE_CONFIG    = 0xFB
-		,		    MPSSE_SEND_IMMEDIATE = 0x87;
+		const uint8_t       READ_DATA_CMD        = 0x20U
+		,		    READ_LENGTH 	 = 0x00U
+		,		    SEND_NAK_CMD         = 0x13U
+		,		    NAK_BYTE 		 = 0xFFU
+		,		    ADBUS_DIRECTION      = 0x80U
+		,		    ADBUS_DATA	         = 0xDEU
+		,		    ADBUS_LINE_CONFIG    = 0xFBU
+		,		    MPSSE_SEND_IMMEDIATE = 0x87U;
 		DWORD	   	    BYTE_READ_TIMEOUT    = 500;
 	}
 	
 	//magic numbers for writing a byte
 	namespace write
 	{
-		const uint8_t       WRITE_DATA_CMD	 = 0x11
- 		,		    WRITE_LENGTH         = 0x00
- 		,		    ADBUS_DIRECTION      = 0x80
- 		,		    ADBUS_DATA		 = 0xFE
- 		,		    ADBUS_LINE_CONFIG	 = 0xFB
- 		,		    READ_ACK_CMD	 = 0x22
- 		,		    READ_LENGTH		 = 0x00
- 		,		    MPSSE_SEND_IMMEDIATE = 0x87
- 		,		    ACK_MASK 		 = 0x01
- 		,		    ACK_VALUE		 = 0x00;
+		const uint8_t       WRITE_DATA_CMD	 = 0x11U
+ 		,		    WRITE_LENGTH         = 0x00U
+ 		,		    ADBUS_DIRECTION      = 0x80U
+ 		,		    ADBUS_DATA		 = 0xDEU
+ 		,		    ADBUS_LINE_CONFIG	 = 0xFBU
+ 		,		    READ_ACK_CMD	 = 0x22U
+ 		,		    READ_LENGTH		 = 0x00U
+ 		,		    MPSSE_SEND_IMMEDIATE = 0x87U
+ 		,		    ACK_MASK 		 = 0x01U
+ 		,		    ACK_VALUE		 = 0x00U;
  		DWORD               BYTE_WRITE_TIMEOUT	 = 500;
 	}
 
 	//magic numbers for addressing
 	namespace address
 	{
-		const uint8_t       DATA_SHIFT_AMOUNT    = 1;
-		const uint8_t       DATA_READ_MASK	 = 0x01
-		,	            DATA_WRITE_MASK	 = 0xFE;
+		const uint8_t       DATA_SHIFT_AMOUNT    = 1U
+		,		        DATA_READ_MASK	 = 0x01U
+		,	            DATA_WRITE_MASK	 = 0xFEU;
 	}
 }
 
@@ -194,7 +194,7 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 		DWORD bytesSent;
 		uint8_t txBuffer[16];
 		txBuffer[bytesToSend++] = magic::DIVIDE_DISABLE; //disable divide-by-5 for 60MHz master clock
-		txBuffer[bytesToSend++] = magic::ADAPTIVE_CLK_DISABLE; //Disable adaptive clocking
+		txBuffer[bytesToSend++] = magic::ADAPTIVE_CLK_CONFIG; //Set adaptive clocking state
 		txBuffer[bytesToSend++] = magic::THREE_PHASE_CLK_ENABLE; //Enable 3-phase data clocking
 		txBuffer[bytesToSend++] = magic::DRIVE_ZERO_ENABLE; //Enable drive-zero mode on the I2C lines
 		txBuffer[bytesToSend++] = magic::DRIVE_ZERO_LOWER;//Enable drive-zero for lower port
@@ -214,6 +214,8 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 			txBuffer[bytesToSend++] = magic::CMD_SET_DIVIDER;//Send command to set clock divider
 			txBuffer[bytesToSend++] = magic::SET_DIVIDER_LOW;//Lower byte of divider value
 			txBuffer[bytesToSend++] = magic::SET_DIVIDER_HIGH;//higher byte
+			
+			std::cout<<"Clock divider value is "<<std::hex<<unsigned(magic::SET_DIVIDER_HIGH)<<" "<<unsigned(magic::SET_DIVIDER_LOW)<<std::endl;
 			error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
 			if(FT_OK != error)
 			{
@@ -248,8 +250,9 @@ FT_STATUS SetI2CIdle(FT_HANDLE* handle)
 		txBuffer[bytesToSend++] = magic::idle::ACBUS_DIRECTION;
 		txBuffer[bytesToSend++] = magic::idle::SET_LINES_HIGH;
 		txBuffer[bytesToSend++] = magic::idle::ACBUS_LINE_CONFIG;
-
+		
 		error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
+		
 	}
 	return error;
 	
@@ -269,22 +272,26 @@ FT_STATUS SetI2CStart(FT_HANDLE* handle)
 		DWORD bytesSent;	
 		DWORD dwCount;
 		uint8_t txBuffer[30];
-		for(dwCount=0; dwCount < 4; dwCount++) 
+		
+		for(dwCount=0; dwCount<4; dwCount++) 
 		{
 			txBuffer[bytesToSend++] = magic::start::ADBUS_DIRECTION; 
 			txBuffer[bytesToSend++] = magic::start::ADBUS_DATA; 
 			txBuffer[bytesToSend++] = magic::start::ADBUS_LINE_CONFIG; 
 		}
-		for(dwCount=0; dwCount < 4; dwCount++) 
+		 
+		for(dwCount=0; dwCount<4; dwCount++) 
 		{
 			txBuffer[bytesToSend++] = magic::start::ADBUS_DIRECTION;
 			txBuffer[bytesToSend++] = magic::start::ADBUS_CLOCK; 
 			txBuffer[bytesToSend++] = magic::start::ADBUS_LINE_CONFIG; 
 		}
-		txBuffer[bytesToSend++] = magic::start::ACBUS_DIRECTION; 
-		txBuffer[bytesToSend++] = magic::start::ACBUS_DATA; 
-		txBuffer[bytesToSend++] = magic::start::ACBUS_LINE_CONFIG; 
-	
+		for(dwCount=0; dwCount<4; dwCount++) 
+		{
+			txBuffer[bytesToSend++] = magic::start::ACBUS_DIRECTION; 
+			txBuffer[bytesToSend++] = magic::start::ACBUS_DATA; 
+			txBuffer[bytesToSend++] = magic::start::ACBUS_LINE_CONFIG; 
+		}
 		error = FT_Write(*handle, txBuffer, bytesToSend, &bytesSent);
 	}
 	return error;
@@ -447,11 +454,11 @@ FT_STATUS WriteAddr(FT_HANDLE* handle, uint8_t data, bool readNWrite, bool& succ
 	if(readNWrite)
 	{
 		//cast to uint8_t to comply with MISRA C++ Rule 5-0-10
-		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) | magic::address::DATA_READ_MASK));
+		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) | magic::address::DATA_READ_MASK);
 	}
 	else
 	{
-		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) & magic::address::DATA_WRITE_MASK));
+		nData = static_cast<uint8_t>((nData << magic::address::DATA_SHIFT_AMOUNT) & magic::address::DATA_WRITE_MASK);
 	}
 	return WriteByte(handle,nData,success); 
 }
