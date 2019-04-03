@@ -1,10 +1,14 @@
 #define F_CPU 8000000UL
-#define ERROR_PATTERN 0xAAU //error bit pattern is 0b10101010
 #define I2C_CONTROL_CONFIG 0xC5U //I2C control register configuration bits
 #define I2C_vect TWI_vect //AVR uses TWI (two-wire interface) to avoid I2C copyright. Create alias for interrupt vector here
 #define I2C_INTERRUPT_CLEAR_MASK 0x80U//used for clearing I2C interrupt flag 
-#define I2C_WRITING 0x60U //status code for receiving an I2C byte	
+#define I2C_PRESCALER_MASK 0xF8 //mask for TWSR to remove prescaler bits
+#define I2C_ADDRESSED 0x60U //status code for receiving own SLA+W
+#define I2C_WRITING 0x80 //status code for receipt of data and ACK returned
 #define I2C_READING 0xA8U //status code for receipt of ACK after a write to the PC
+#define I2C_STOP_OR_REPEATED_START 0xA0
+#define PORTB_LED_ON_MASK 0x01
+#define PORTB_LED_OFF_MASK 0x00
 #define DATA_WAITING 1U
 #define NOT_DATA_WAITING 0U
 //compile with -D SLAVE_ONE if compiling for first slave, SLAVE_TWO if compiling for second
@@ -24,8 +28,8 @@ typedef enum
 	I2C_FAIL,
 }I2C_STATUS;
 
-uint8_t globalData = 0U;//used for receiving I2C data
-uint8_t dataReady = NOT_DATA_WAITING;//flag to indicate data received
+volatile uint8_t globalData;//used for receiving I2C data
+volatile uint8_t dataReady;//flag to indicate data received
 
 
 void I2CInit(void);

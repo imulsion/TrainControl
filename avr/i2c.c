@@ -5,25 +5,27 @@
 ISR(I2C_vect) //I2C interrupt handler
 {
 	cli();//disable interrupts
-	PORTB ^= 0x02;
-	uint8_t status = TWSR;
-
+	uint8_t status = TWSR & I2C_PRESCALER_MASK;
 	switch(status)
 	{
+		case I2C_STOP_OR_REPEATED_START:
+			//repeated start or stop received, no action needed
+			break;
+		case I2C_ADDRESSED:
+			//AVR has been addressed with SLA+W, wait for next interrupt
+			break;
 		case I2C_WRITING:
 			//AVR is being written to over I2C, read the data
 			globalData = TWDR;
 			dataReady = DATA_WAITING;
 			break;
 		case I2C_READING:
-			//computer has received data in TWDR and sent ACK, don't need to do anything
+			//computer has received data in TWDR and sent ACK, no action needed
 			break;
 		default: //unexpected status code
-			PORTB = 0x00;
-			PORTB |= status;//write error code to PORTB
+			PORTD = status;//write error code to PORTD
 			break;
 	}
-
 	TWCR |= I2C_INTERRUPT_CLEAR_MASK;//clear TWINT bit
 	sei();//enable interrupts
 }
@@ -32,30 +34,40 @@ ISR(I2C_vect) //I2C interrupt handler
 int main (void)
 {
 	I2CInit();//initialise I2C interface
-	char i2cData;
-	uint8_t status;
+	uint8_t ledStatus = 0U;
 	sei();//enable global interrupts
 	for(;;)
 	{
-		if(DATA_WAITING == dataReady)
+		if((DATA_WAITING == dataReady) && (0xC5 == globalData))
 		{
-			i2cData = (char)globalData;	
-			dataReady = NOT_DATA_WAITING;
-			if('l' == i2cData)
+			PORTD = 0x11;
+			if(0U == ledStatus)
 			{
-				PORTB ^= 0x01;
+				ledStatus = 1U;
+				PORTB |= PORTB_LED_ON_MASK;
 			}
+			else
+			{
+				ledStatus = 0U;
+				PORTB &= PORTB_LED_OFF_MASK;
+			}
+			cli();
+			dataReady = NOT_DATA_WAITING;
+			sei();
 		}
-		
 	}
 	return 0;
 }
 
 void I2CInit(void)
 {
-	DDRB |= 0xFF; //report error codes on this port
-	PORTB &= 0x00;
+	globalData = 0U;
+	dataReady = NOT_DATA_WAITING;
+	DDRD |= 0xFF; //report error codes on this port
+	PORTD &= 0x00;
 	
+	DDRB |= 0xFF;
+	PORTB &= 0x00;
 	
 	//ensure bit rate register is cleared
 	TWBR &= 0x00;
