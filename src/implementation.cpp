@@ -19,17 +19,17 @@ namespace magic
 	,		     EVT_CHAR_EN		 = 0U
 	,		     ERR_CHAR_EN		 = 0U
 	//magic numbers for MPSSE configuration
-	,                    DIVIDE_DISABLE 		 = 0x8AU
-        ,		     ADAPTIVE_CLK_CONFIG	 = 0x96U
+	,                    DIVIDE_DISABLE 		 = 0x8BU
+        ,		     ADAPTIVE_CLK_CONFIG	 = 0x97U
 	,		     THREE_PHASE_CLK_ENABLE 	 = 0x8CU
 	,		     DRIVE_ZERO_ENABLE 		 = 0x9EU
 	,		     DRIVE_ZERO_LOWER 		 = 0x07U
 	,		     DRIVE_ZERO_UPPER 		 = 0x00U
-	,		     DISABLE_LOOPBACK 		 = 0x85U
+	,		     DISABLE_LOOPBACK 		 = 0x85U;
 	
 	//magic numbers for MPSSE clock configuration
-	,		     CLK_DIVIDER 		 = 0xCBU
-	,		     CMD_SET_DIVIDER 		 = 0x86U
+	const uint16_t CLK_DIVIDER 		     = 0x0027U;
+	const uint8_t  CMD_SET_DIVIDER 		 = 0x86U
 	,		     SET_DIVIDER_LOW 		 = CLK_DIVIDER & 0xFFU
 	,		     SET_DIVIDER_HIGH 		 = (CLK_DIVIDER >> 8U) & 0xFFU;
 
@@ -38,7 +38,7 @@ namespace magic
 	{
 		const uint8_t       ADBUS_DIRECTION 	 = 0x80U
 		,		    SET_LINES_HIGH 	 = 0xFFU
-		,		    ADBUS_LINE_CONFIG 	 = 0xDBU
+		,		    ADBUS_LINE_CONFIG 	 = 0xFBU
 		,		    ACBUS_DIRECTION 	 = 0x82U
 		,		    ACBUS_LINE_CONFIG 	 = 0x40U;
 	}
@@ -49,7 +49,7 @@ namespace magic
 		const uint8_t       ADBUS_DIRECTION 	 = 0x80U
 		,		    ADBUS_DATA 		 = 0xDDU
 		,		    ADBUS_CLOCK 	 = 0xDCU
-		,		    ADBUS_LINE_CONFIG 	 = 0xDBU
+		,		    ADBUS_LINE_CONFIG 	 = 0xFBU
 		,		    ACBUS_DIRECTION 	 = 0x82U
 		,		    ACBUS_DATA 		 = 0xBFU
 		,		    ACBUS_LINE_CONFIG 	 = 0x40U;
@@ -62,7 +62,7 @@ namespace magic
 		,		    ADBUS_DATA1		 = 0xDCU
 		,		    ADBUS_DATA2		 = 0xDDU
 		,		    ADBUS_DATA3		 = 0xDFU
-		,		    ADBUS_LINE_CONFIG 	 = 0xDBU
+		,		    ADBUS_LINE_CONFIG 	 = 0xFBU
 		,		    ACBUS_DIRECTION 	 = 0x82U
 		,		    ACBUS_DATA 		 = 0xFFU
 		,		    ACBUS_LINE_CONFIG 	 = 0x40U;
@@ -77,7 +77,7 @@ namespace magic
 		,		    NAK_BYTE 		 = 0xFFU
 		,		    ADBUS_DIRECTION      = 0x80U
 		,		    ADBUS_DATA	         = 0xDEU
-		,		    ADBUS_LINE_CONFIG    = 0xDBU
+		,		    ADBUS_LINE_CONFIG    = 0xFBU
 		,		    MPSSE_SEND_IMMEDIATE = 0x87U;
 		DWORD	   	    BYTE_READ_TIMEOUT    = 500;
 	}
@@ -89,7 +89,7 @@ namespace magic
  		,		    WRITE_LENGTH         = 0x00U
  		,		    ADBUS_DIRECTION      = 0x80U
  		,		    ADBUS_DATA		 = 0xDEU
- 		,		    ADBUS_LINE_CONFIG	 = 0xDBU
+ 		,		    ADBUS_LINE_CONFIG	 = 0xFBU
  		,		    READ_ACK_CMD	 = 0x22U
  		,		    READ_LENGTH		 = 0x00U
  		,		    MPSSE_SEND_IMMEDIATE = 0x87U
@@ -214,6 +214,8 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 			txBuffer[bytesToSend++] = magic::CMD_SET_DIVIDER;//Send command to set clock divider
 			txBuffer[bytesToSend++] = magic::SET_DIVIDER_LOW;//Lower byte of divider value
 			txBuffer[bytesToSend++] = magic::SET_DIVIDER_HIGH;//higher byte
+			
+			std::cout<<"Clock divider value is "<<std::hex<<unsigned(magic::SET_DIVIDER_HIGH)<<" "<<unsigned(magic::SET_DIVIDER_LOW)<<std::endl;
 			error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
 			if(FT_OK != error)
 			{
@@ -248,10 +250,9 @@ FT_STATUS SetI2CIdle(FT_HANDLE* handle)
 		txBuffer[bytesToSend++] = magic::idle::ACBUS_DIRECTION;
 		txBuffer[bytesToSend++] = magic::idle::SET_LINES_HIGH;
 		txBuffer[bytesToSend++] = magic::idle::ACBUS_LINE_CONFIG;
-		//debug
-		std::cout<<"here"<<std::endl;
+		
 		error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
-		std::cout<<"here2"<<std::endl;
+		
 	}
 	return error;
 	

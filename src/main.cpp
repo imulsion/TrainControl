@@ -28,6 +28,10 @@ int main()
 		else
 		{
 			deviceStatus = SetI2CIdle(&deviceHandle);
+			if(FT_OK != deviceStatus)
+			{
+				std::cout<<"Error writing idle state, code: "<<deviceStatus<<std::endl;
+			}
 		}
 		std::cout<<"Press l to toggle LED, q to quit"<<std::endl;
 		while('q' != input)
@@ -37,19 +41,26 @@ int main()
 			{
 				deviceStatus |= SetI2CStart(&deviceHandle);
 				deviceStatus |= WriteAddr(&deviceHandle,0x01,false,success);
-				if(success)
+				if(FT_OK != deviceStatus)
 				{
-					success = false;
-					deviceStatus |= WriteByte(&deviceHandle,(uint8_t)input,success);
-					deviceStatus |= SetI2CStop(&deviceHandle);
-					if(!success || (FT_OK != deviceStatus))
-					{
-						std::cout<<"Error during byte transmission"<<std::endl;
-					}
+					std::cout<<"Error writing address, code: "<<deviceStatus<<std::endl;
 				}
 				else
 				{
-					std::cout<<"Error during address transmission. Code: "<<deviceStatus<<std::endl;
+					if(success)
+					{
+						success = false;
+						deviceStatus |= WriteByte(&deviceHandle,0xC5,success);
+						deviceStatus |= SetI2CStop(&deviceHandle);
+						if(!success || (FT_OK != deviceStatus))
+						{
+							std::cout<<"Error during byte transmission"<<std::endl;
+						}
+					}
+					else
+					{
+						std::cout<<"Error during address transmission. Code: "<<deviceStatus<<std::endl;
+					}
 				}
 			}
 		}
