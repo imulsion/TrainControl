@@ -1,9 +1,10 @@
 #include "implementation.h"
 
+//TODO: Magic numbers and some comments. Code will likely be radically changed soon though, so don't try too hard.
 int main()
 {
 	FT_HANDLE deviceHandle;
-	FT_STATUS deviceStatus = I2cInit(&deviceHandle);
+	FT_STATUS deviceStatus = CableInit(&deviceHandle);
 	char input = '\0';
 	bool success = false;
 	if(FT_OK != deviceStatus)

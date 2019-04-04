@@ -1,3 +1,8 @@
+//TODO: Magic numbers and commenting
+
+
+
+
 #include "implementation.h"
 
 //magic number namespace
@@ -19,19 +24,19 @@ namespace magic
 	,		     EVT_CHAR_EN		 = 0U
 	,		     ERR_CHAR_EN		 = 0U
 	//magic numbers for MPSSE configuration
-	,                    DIVIDE_DISABLE 		 = 0x8BU
+	,                    DIVIDE_CONFIG 		 = 0x8BU //clock divider configuration
         ,		     ADAPTIVE_CLK_CONFIG	 = 0x97U
-	,		     THREE_PHASE_CLK_ENABLE 	 = 0x8CU
-	,		     DRIVE_ZERO_ENABLE 		 = 0x9EU
+	,		     THREE_PHASE_CLK_ENABLE 	 = 0x8CU 
+	,		     DRIVE_ZERO_ENABLE 		 = 0x9EU 
 	,		     DRIVE_ZERO_LOWER 		 = 0x07U
 	,		     DRIVE_ZERO_UPPER 		 = 0x00U
 	,		     DISABLE_LOOPBACK 		 = 0x85U;
 	
 	//magic numbers for MPSSE clock configuration
-	const uint16_t CLK_DIVIDER 		     = 0x0027U;
-	const uint8_t  CMD_SET_DIVIDER 		 = 0x86U
-	,		     SET_DIVIDER_LOW 		 = CLK_DIVIDER & 0xFFU
-	,		     SET_DIVIDER_HIGH 		 = (CLK_DIVIDER >> 8U) & 0xFFU;
+	const uint16_t       CLK_DIVIDER 		 = 0x0027U;
+	const uint8_t        CMD_SET_DIVIDER 		 = 0x86U
+	,		     CLOCK_DIVIDER_LOW_BYTE      = CLK_DIVIDER & 0xFFU
+	,		     CLOCK_DIVIDER_HIGH_BYTE 	 = (CLK_DIVIDER >> 8U) & 0xFFU;
 
 	//magic numbers for I2C idle
 	namespace idle
@@ -102,13 +107,13 @@ namespace magic
 	namespace address
 	{
 		const uint8_t       DATA_SHIFT_AMOUNT    = 1U
-		,		        DATA_READ_MASK	 = 0x01U
+		,		    DATA_READ_MASK	 = 0x01U
 		,	            DATA_WRITE_MASK	 = 0xFEU;
 	}
 }
 
 //initialise the i2c connection
-FT_STATUS I2cInit(FT_HANDLE* handle)
+FT_STATUS CableInit(FT_HANDLE* handle)
 {
 	FT_STATUS error;
 	if(NULL ==  handle)
@@ -193,7 +198,7 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 		DWORD bytesToSend = 0;
 		DWORD bytesSent;
 		uint8_t txBuffer[16];
-		txBuffer[bytesToSend++] = magic::DIVIDE_DISABLE; //disable divide-by-5 for 60MHz master clock
+		txBuffer[bytesToSend++] = magic::DIVIDE_CONFIG; //configure divide-by-5 for 60MHz master clock
 		txBuffer[bytesToSend++] = magic::ADAPTIVE_CLK_CONFIG; //Set adaptive clocking state
 		txBuffer[bytesToSend++] = magic::THREE_PHASE_CLK_ENABLE; //Enable 3-phase data clocking
 		txBuffer[bytesToSend++] = magic::DRIVE_ZERO_ENABLE; //Enable drive-zero mode on the I2C lines
@@ -212,10 +217,11 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 			//Configure clock dividers to set desired I2C frequency (100kHz)
 			bytesToSend = 0;
 			txBuffer[bytesToSend++] = magic::CMD_SET_DIVIDER;//Send command to set clock divider
-			txBuffer[bytesToSend++] = magic::SET_DIVIDER_LOW;//Lower byte of divider value
-			txBuffer[bytesToSend++] = magic::SET_DIVIDER_HIGH;//higher byte
+			txBuffer[bytesToSend++] = magic::CLOCK_DIVIDER_LOW_BYTE;//Lower byte of divider value
+			txBuffer[bytesToSend++] = magic::CLOCK_DIVIDER_HIGH_BYTE;//higher byte
 			
-			std::cout<<"Clock divider value is "<<std::hex<<unsigned(magic::SET_DIVIDER_HIGH)<<" "<<unsigned(magic::SET_DIVIDER_LOW)<<std::endl;
+			//debug
+			std::cout<<"Clock divider value is "<<std::hex<<unsigned(magic::CLOCK_DIVIDER_HIGH_BYTE)<<" "<<unsigned(magic::CLOCK_DIVIDER_LOW_BYTE)<<std::endl;
 			error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
 			if(FT_OK != error)
 			{
@@ -272,7 +278,10 @@ FT_STATUS SetI2CStart(FT_HANDLE* handle)
 		DWORD bytesSent;	
 		DWORD dwCount;
 		uint8_t txBuffer[30];
-		
+
+	//TODO: replace all these magic numbers!
+	
+		//write command 4 times to ensure it activates
 		for(dwCount=0; dwCount<4; dwCount++) 
 		{
 			txBuffer[bytesToSend++] = magic::start::ADBUS_DIRECTION; 
@@ -310,6 +319,9 @@ FT_STATUS SetI2CStop(FT_HANDLE* handle)
 		DWORD dwCount;
 		DWORD bytesSent;
 		uint8_t txBuffer[50];
+
+//TODO: Magic numbers!
+		
 		for(dwCount=0; dwCount<4; dwCount++) 
 		{
 			txBuffer[bytesToSend++] = magic::stop::ADBUS_DIRECTION; 
