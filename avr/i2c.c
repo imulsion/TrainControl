@@ -5,7 +5,7 @@
 /*
  * Function: ISR(I2C_vect)
  *
- * I2C interrupt routine. Function called whenever the TWINT flag in I2C_CONTROL_REGISTER (I2C control register) is set (to 0) by hardware. This occurs when an I2C event occurs such as a START or STOP condition. The TWINT flag must then be cleared (set to 1) by software to allow the hardware to continue receiving events
+ * I2C interrupt routine. Function called whenever the TWINT flag in I2C_CONTROL_REGISTER is set (to 0) by hardware. This occurs when an I2C event occurs such as a START or STOP condition. The TWINT flag must then be cleared (set to 1) by software to allow the hardware to continue receiving events
  *
  * Parameter[in] I2C_vect 		Vector specifying the interrupt being serviced.
  */
@@ -49,27 +49,17 @@ ISR(I2C_vect)
 
 int main (void)
 {
-	I2CInit();//initialise I2C interface
+	DeviceInit();//initialise internal registers and set up device	
 	
-	uint8_t ledStatus = LED_STATUS_OFF; //variable for storing current state of the LED
        	sei();//enable global interrupts 
 
 	//main loop
         for(;;)
        	{
-		//if data has been received and is valid
-		if((DATA_WAITING == dataReady) && (VALID_DATA == globalData))
+		//if data has been received
+		if(DATA_WAITING == dataReady)
 		{
-			if(LED_STATUS_OFF == ledStatus)
-			{
-				ledStatus = LED_STATUS_ON;
-				PORTB |= PORTB_LED_ON_MASK;
-			}
-			else
-			{
-				ledStatus = LED_STATUS_OFF;
-				PORTB &= PORTB_LED_OFF_MASK;
-			}
+			PWM_COUNTER_REGISTER = globalData;//change PWM duty cycle
 			cli();
 			dataReady = NOT_DATA_WAITING;
 			sei();
@@ -78,19 +68,23 @@ int main (void)
 	return 0;
 }
 
-void I2CInit(void)
+void DeviceInit(void)
 {
+	//global variables
 	globalData = INITIAL_DATA;
 	dataReady = NOT_DATA_WAITING;
 	
-	DDRB |= PORTB_DATA_DIRECTION;
+	//port registers and initial value setup 
+	PORTB_DATA_DIRECTION_REGISTER |= PORTB_DATA_DIRECTION_VALUE;
 	PORTB &= REGISTER_CLEAR_MASK;
 	
-	//ensure bit rate register is cleared
-	I2C_BITRATE_REGISTER &= REGISTER_CLEAR_MASK;
-
+	//I2C initialisation
+	I2C_BITRATE_REGISTER &= REGISTER_CLEAR_MASK; //ensure bit rate register is cleared
 	I2C_ADDRESS_REGISTER = I2C_ADDR;//assign I2C address to I2C address register
-
 	I2C_CONTROL_REGISTER = I2C_CONTROL_CONFIG; //set i2c configuration register
+	
+	//PWM initialisation
+	TCCR2 = PWM_CONTROL_CONFIG; 
+	PWM_COUNTER_REGISTER = PWM_INITIAL_DUTY_CYCLE;
 	
 }
