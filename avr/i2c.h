@@ -37,8 +37,8 @@
 //PWM constant definitions
 #define PWM_CONTROL_REGISTER_TWO         TCCR2             //Alias for 2nd PWM channel control register
 #define PWM_PRESCALER                    1U                //Value for the PWM prescaler. Equation for PWM frequency is F = F_CPU/(510*PWM_PRESCALER)
-#define PWM_CONTROL_CONFIG               0x71U             //PWM control register configuration bits 
-#define PWM_COUNTER_REGISTER             TCNT2             //Internal counter register used by the PWM hardware. The value written to this register determines the duty cycle of the PWM waveform
+#define PWM_CONTROL_CONFIG               0x61U             //PWM control register configuration bits 
+#define PWM_COUNTER_REGISTER             OCR2             //Internal counter register used by the PWM hardware. The value written to this register determines the duty cycle of the PWM waveform
 #define PWM_INITIAL_DUTY_CYCLE           128U              //Initial duty cycle value (50%)
 
 volatile uint8_t globalData;                               //used for receiving I2C data
