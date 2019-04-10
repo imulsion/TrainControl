@@ -38,6 +38,13 @@ namespace magic
 	,		     CLOCK_DIVIDER_LOW_BYTE      = CLK_DIVIDER & 0xFFU
 	,		     CLOCK_DIVIDER_HIGH_BYTE 	 = (CLK_DIVIDER >> 8U) & 0xFFU;
 
+	namespace system_reset
+	{
+		const uint8_t ADBUS_DIRECTION   = 0x80U
+		,			  SET_LINES_HIGH    = 0xFFU
+		,			  RESET_LINE_LOW    = 0xEFU
+		,             ADBUS_LINE_CONFIG = 0xFBU;
+	}
 	//magic numbers for I2C idle
 	namespace idle
 	{
@@ -233,6 +240,44 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 				std::cout<<"MPSSE successfully configured!"<<std::endl;
 			}
 		}
+	}
+	return error;
+}
+
+FT_STATUS SystemReset(FT_HANDLE* handle)
+{
+	FT_STATUS error;
+	if(NULL == handle)
+	{
+		return FT_INVALID_HANDLE;
+	}
+	else
+	{
+		DWORD bytesToSend = 0;
+		DWORD bytesSent;
+		DWORD dwCount;
+		uint8_t txBuffer[64];
+		
+		for(dwCount = 0; dwCount<4; dwCount++)
+		{
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_DIRECTION;
+			txBuffer[bytesToSend++] = magic::system_reset::SET_LINES_HIGH;
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_LINE_CONFIG;
+		}
+		for(dwCount = 0; dwCount<4; dwCount++)
+		{
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_DIRECTION;
+			txBuffer[bytesToSend++] = magic::system_reset::RESET_LINE_LOW;
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_LINE_CONFIG;
+		}
+		for(dwCount = 0; dwCount<4; dwCount++)
+		{
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_DIRECTION;
+			txBuffer[bytesToSend++] = magic::system_reset::SET_LINES_HIGH;
+			txBuffer[bytesToSend++] = magic::system_reset::ADBUS_LINE_CONFIG;
+		}
+		error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
+		
 	}
 	return error;
 }

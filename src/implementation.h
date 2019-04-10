@@ -23,6 +23,15 @@ FT_STATUS MPSSEVerify();
  */
 FT_STATUS MPSSEConfig(FT_HANDLE* handle);
 
+/* Function: SystemReset
+ *
+ * Applies a pulse to the TMS (brown) line of the C232HM cable which is designed to reset all I2C slaves at the same time
+ *
+ * Parameter[in] handle                 Pointer to a FT_HANDLE used for accessing the device
+ */
+
+FT_STATUS SystemReset(FT_HANDLE* handle);
+
 /* Function: SetI2CIdle
  *
  * Sets the I2C lines to idle mode, i.e. both SCL and SDA released by the master
