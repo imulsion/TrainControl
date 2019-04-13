@@ -1,5 +1,10 @@
 #include "implementation.h" //implementation specific header
 #include <string>           //C++ string library
+#include <thread>           //C++11 thread library
+#include <mutex>            //C++11 mutex library
+#include <functional>       //needed for std::ref
+
+
 
 const uint8_t     SLAVE_ADDR_ONE       = 0x01      
 ,                 SLAVE_ADDR_TWO       = 0x02 
@@ -8,22 +13,54 @@ const uint8_t     SLAVE_ADDR_ONE       = 0x01
 ,                 DUTY_CYCLE_FRACTION  = 100U     //Used to normalise duty cycle input to a fraction between 0 and 1
 ,                 AVR_COUNTER_MAX      = 255U;    //Maximum value of AVR counter register
 
-const std::string IN_QUIT              = "q"       //Expected user input for a quit command
-,                 IN_RESET             = "r";      //Expected user input for a reset command
+const std::string IN_QUIT              = "quit"       //Expected user input for a quit command
+,                 IN_RESET             = "reset"       //Expected user input for a reset command
+,                 IN_HELP              = "help";   //Expected user input for a help command 
 
+void GetUserInput(std::string& input, bool& flag, std::mutex& mutex);
+void Run(std::string& input, bool& flag, std::mutex& mutex);
 
 int main(void)
 {
-	//variable definitions
+	//threading variables
+	bool inputFlag = false;
+	std::string inputString = "";
+
+	std::mutex inputMutex;
+	std::thread inputThread(GetUserInput,std::ref(inputString),std::ref(inputFlag), std::ref(inputMutex)); 
+	std::thread runThread(Run,std::ref(inputString),std::ref(inputFlag), std::ref(inputMutex));
+
+	inputThread.detach();
+	runThread.join();
+
+	return 0; //end of main function
+}
+
+
+
+void GetUserInput(std::string& input, bool& flag, std::mutex& mutex)
+{
+	std::string userInput;
+	while(true)
+	{
+		getline(std::cin,userInput); //wait for input
+		mutex.lock();//wait for lock
+		input= userInput;
+		flag = true;
+		mutex.unlock();
+	}
+}
+
+void Run(std::string& input, bool& flag, std::mutex& mutex)
+{
 	FT_HANDLE deviceHandle;                                //Handle to the device 
 	bool success = false;                                  //Flag to indicate success of data transmission functions
 	uint8_t dutyCycle = 0U;                                //PWM duty cycle
-        std::string input;                                     //User input storage  
-
-	FT_STATUS deviceStatus = CableInit(&deviceHandle);     
-
+	bool commsFlag = false;                                //flag for indicating user input waiting to be processed, essentially a copy of the mutex protected flag parameter
+	std::string userInput = "";                            //local copy of mutex protected user input string
 
 
+	FT_STATUS deviceStatus = CableInit(&deviceHandle);     //initialise cable
 	if(FT_OK != deviceStatus)
 	{
 		std::cout<<"Error encountered during initialisation, program terminated"<<std::endl;
@@ -52,26 +89,46 @@ int main(void)
 			{
 				std::cout<<"Error writing idle state, code: "<<deviceStatus<<std::endl;
 			}
-		}
-		//print user instructions
-		std::cout<<"Type a number between 0 and 100 to set the duty cycle of the PWM wave. Press q to quit, and r to reset devices."<<std::endl;
-
-		while(true)
-		{
-			//scan for user input
-		        getline(std::cin,input);
-			if(IN_QUIT == input)
+			else
 			{
-				break; 
+				std::cout<<"Enter a number between 0 and 99 to adjust the duty cycle of the PWM. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
+
 			}
-			if(IN_RESET == input)
+		}
+	}	
+
+	while(true)
+	{
+		if(mutex.try_lock()) //attempt to lock mutex
+		{
+			if(flag)
+			{
+				commsFlag = true; //user has entered new input which should be processed
+				flag = false; 
+				userInput = input;
+			}
+			mutex.unlock();
+		}
+		
+		if(commsFlag) //use flag here to ensure mutex is locked for the shortest amount of time possible
+		{	
+			commsFlag = false;
+			if(IN_HELP == userInput)
+			{
+				std::cout<<"Enter a number between 0 and 99 to adjust the duty cycle of the PWM. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
+			}
+			else if(IN_RESET == userInput)
 			{
 				//reset AVRs
 				deviceStatus = SystemReset(&deviceHandle);
 				if(FT_OK != deviceStatus)
 				{
-					std::cout<<"Error while attempting to reset I2C devices"<<std::endl;
+					std::cout<<"Error while attempting to reset I2C slave devices"<<std::endl;
 				}
+			}
+			else if(IN_QUIT == userInput)
+			{
+				break;
 			}
 			else
 			{
@@ -123,16 +180,12 @@ int main(void)
 				{
 					std::cout<<"Invalid input"<<std::endl;
 				}
+				END:
+					; //goto from catch statement, code jumps here if user enters an invalid input. Effectively a continue statement in the catch block, but goto is used because continue is only allowed in for loops when following MISRA guidelines
 			}
-		END:
-			; //goto from catch statement, code jumps here if user enters an invalid input. Effectively a continue statement in the catch block, but goto is used because continue is only allowed in for loops when following MISRA guidelines
 		}
-
-
 	}
-	
-	deviceStatus = FT_OK;
-	
+
 	//disconnect device
 	deviceStatus = FreePort(&deviceHandle);
 	if(FT_OK != deviceStatus)
@@ -140,7 +193,4 @@ int main(void)
 		std::cout<<"Termination error. Press any key to continue..."<<std::endl;
 		std::cin.get();
 	}
-	
-	
-	return 0; //end of main function
 }
