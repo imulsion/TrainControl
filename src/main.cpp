@@ -1,24 +1,4 @@
 #include "implementation.h" //implementation specific header
-#include <string>           //C++ string library
-#include <thread>           //C++11 thread library
-#include <mutex>            //C++11 mutex library
-#include <functional>       //needed for std::ref
-
-
-
-const uint8_t     SLAVE_ADDR_ONE       = 0x01      
-,                 SLAVE_ADDR_TWO       = 0x02 
-,                 DUTY_CYCLE_MIN       = 0U       //minimum valid duty cycle value
-,                 DUTY_CYCLE_MAX       = 100U     //maximum valid duty cycle value
-,                 DUTY_CYCLE_FRACTION  = 100U     //Used to normalise duty cycle input to a fraction between 0 and 1
-,                 AVR_COUNTER_MAX      = 255U;    //Maximum value of AVR counter register
-
-const std::string IN_QUIT              = "quit"       //Expected user input for a quit command
-,                 IN_RESET             = "reset"       //Expected user input for a reset command
-,                 IN_HELP              = "help";   //Expected user input for a help command 
-
-void GetUserInput(std::string& input, bool& flag, std::mutex& mutex);
-void Run(std::string& input, bool& flag, std::mutex& mutex);
 
 int main(void)
 {
@@ -59,6 +39,22 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 	bool commsFlag = false;                                //flag for indicating user input waiting to be processed, essentially a copy of the mutex protected flag parameter
 	std::string userInput = "";                            //local copy of mutex protected user input string
 
+	SectionT sections[top::NUM_SECTIONS];
+	uint8_t statusBuffer[implementation::RXBUFFER_LENGTH];
+
+	for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
+	{
+		sections[i].dutyCycle = top::INITIAL_DUTY_CYCLE;	
+	}
+        sections[0].owner = top::SLAVE_ONE;
+	sections[1].owner = top::SLAVE_ONE;
+	sections[2].owner = top::SLAVE_TWO;
+	sections[3].owner = top::SLAVE_TWO;
+
+	sections[0].occupied = true;
+	sections[1].occupied = false;
+	sections[2].occupied = true;
+	sections[3].occupied = false;
 
 	FT_STATUS deviceStatus = CableInit(&deviceHandle);     //initialise cable
 	if(FT_OK != deviceStatus)
@@ -109,15 +105,116 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			}
 			mutex.unlock();
 		}
+		success = false;
+
+		//gather status data
+		deviceStatus = SetI2CStart(&deviceHandle);
+		if(FT_OK == deviceStatus)
+		{
+			deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,true,success);
+			if((FT_OK == deviceStatus) && success)
+			{
+				success = false;
+				deviceStatus |= ReadSequence(&deviceHandle,top::STATUS_LENGTH,statusBuffer,success); 	
+				if(!success)
+				{
+					std::cout<<"Error: Read sequence failed, status buffer not updated."<<std::endl;
+				}
+				else
+				{
+					if(top::STATUS_OCCUPIED == statusBuffer[0])
+					{
+						sections[0].occupied = true;
+					}
+					else
+					{
+						sections[0].occupied = false;
+					}
+					sections[0].dutyCycle = statusBuffer[1];
+					
+					if(top::STATUS_OCCUPIED == statusBuffer[2])
+					{
+						sections[1].occupied = true;
+					}
+					else
+					{
+						sections[1].occupied = false;
+					}
+					sections[1].dutyCycle = statusBuffer[3];
+				}
+			}
+			else
+			{
+				std::cout<<"Error: Address write failed when updating status buffer"<<std::endl;
+			}
+		}
+		else
+		{
+			std::cout<<"Error: Could not start I2C communications when updating status buffer"<<std::endl;
+		}
+
+                deviceStatus = SetI2CStop(&deviceHandle);
+		if(FT_OK != deviceStatus)
+		{
+			std::cout<<"Error while terminating communications with first slave"<<std::endl;
+		}
+
+		deviceStatus = SetI2CStart(&deviceHandle);
+		if(FT_OK == deviceStatus)
+		{
+			deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,true,success);
+			if((FT_OK == deviceStatus) && success)
+			{
+				success = false;
+				deviceStatus |= ReadSequence(&deviceHandle,top::STATUS_LENGTH,statusBuffer,success); 	
+				if(!success)
+				{
+					std::cout<<"Error: Read sequence failed, status buffer not updated."<<std::endl;
+				}
+				else
+				{
+					if(top::STATUS_OCCUPIED == statusBuffer[0])
+					{
+						sections[2].occupied = true;
+					}
+					else
+					{
+						sections[2].occupied = false;
+					}
+					sections[0].dutyCycle = statusBuffer[1];
+					
+					if(top::STATUS_OCCUPIED == statusBuffer[2])
+					{
+						sections[3].occupied = true;
+					}
+					else
+					{
+						sections[3].occupied = false;
+					}
+					sections[1].dutyCycle = statusBuffer[3];
+				}
+			}
+			else
+			{
+				std::cout<<"Error: Address write failed when updating status buffer"<<std::endl;
+			}
+		}
+		else
+		{
+			std::cout<<"Error: Could not start I2C communications when updating status buffer"<<std::endl;
+		}
+
+
+
 		
 		if(commsFlag) //use flag here to ensure mutex is locked for the shortest amount of time possible
 		{	
 			commsFlag = false;
-			if(IN_HELP == userInput)
+			if(top::IN_HELP == userInput)
 			{
 				std::cout<<"Enter a number between 0 and 99 to adjust the duty cycle of the PWM. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
 			}
-			else if(IN_RESET == userInput)
+			else if(top::IN_RESET == userInput)
 			{
 				//reset AVRs
 				deviceStatus = SystemReset(&deviceHandle);
@@ -126,7 +223,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 					std::cout<<"Error while attempting to reset I2C slave devices"<<std::endl;
 				}
 			}
-			else if(IN_QUIT == userInput)
+			else if(top::IN_QUIT == userInput)
 			{
 				break;
 			}
@@ -145,15 +242,15 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 					//one goto allowed per loop in MISRA
 					goto END;
 				}
-				if((DUTY_CYCLE_MIN <= dutyCycle) && (DUTY_CYCLE_MAX >= dutyCycle))
+				if((top::DUTY_CYCLE_MIN <= dutyCycle) && (top::DUTY_CYCLE_MAX >= dutyCycle))
 				{
 					//calculate AVR counter register value necessary to produce the required PWM duty cycle
-					dutyCycle = static_cast<int>(AVR_COUNTER_MAX * (static_cast<float>(dutyCycle) / DUTY_CYCLE_FRACTION));
+					dutyCycle = static_cast<int>(top::AVR_COUNTER_MAX * (static_cast<float>(dutyCycle) / top::DUTY_CYCLE_FRACTION));
 
 					//generate I2C START condition on the bus lines 
 					deviceStatus = SetI2CStart(&deviceHandle);
 					//I2C first phase: Address the required device
-					deviceStatus |= WriteAddr(&deviceHandle,SLAVE_ADDR_ONE,false,success);
+					deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
 					if(success && (FT_OK == deviceStatus))
 					{
 						//if addressing was successful and device returned ACK, write the data to the device
