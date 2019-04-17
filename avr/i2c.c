@@ -203,4 +203,8 @@ void DeviceInit(void)
 	{
 		sectionTwoPtr->trainInSection = SECTION_FREE;
 	}
+
+	//external interrupts
+	MCU_CONTROL_REGISTER = MCU_CONFIG; //configure external interrupts
+	INTERRUPT_CONTROL_REGISTER = INTERRUPT_CONTROL_CONFIG; //enable external interrupts
 }
