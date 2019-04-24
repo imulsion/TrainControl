@@ -35,7 +35,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 {
 	FT_HANDLE deviceHandle;                                //Handle to the device 
 	bool success = false;                                  //Flag to indicate success of data transmission functions
-	uint8_t dutyCycle = 0U;                                //PWM duty cycle
+	uint8_t trainSpeed = 0U;                                //PWM duty cycle
 	bool commsFlag = false;                                //flag for indicating user input waiting to be processed, essentially a copy of the mutex protected flag parameter
 	std::string userInput = "";                            //local copy of mutex protected user input string
 
@@ -212,7 +212,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			commsFlag = false;
 			if(top::IN_HELP == userInput)
 			{
-				std::cout<<"Enter a number between 0 and 99 to adjust the duty cycle of the PWM. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
+				std::cout<<"Enter a number between 0 and 99 to adjust the speed of the trains. Enter q to quit, r for a system reset, and s for a status report. Enter help to display this message."<<std::endl;
 			}
 			else if(top::IN_RESET == userInput)
 			{
@@ -227,12 +227,22 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			{
 				break;
 			}
+			else if(top::IN_STATUS == userInput)
+			{
+
+				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
+				{
+					std::cout<<"Section "+i+":"<<std::endl;
+					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
+					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
+				}
+			}
 			else
 			{
 				try
 				{
 					//attempt to convert user input to an integer
-					dutyCycle = std::stoi(input,NULL);
+					trainSpeed = std::stoi(input,NULL);
 				}
 				catch(const std::invalid_argument& e)
 				{
@@ -242,34 +252,47 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 					//one goto allowed per loop in MISRA
 					goto END;
 				}
-				if((top::DUTY_CYCLE_MIN <= dutyCycle) && (top::DUTY_CYCLE_MAX >= dutyCycle))
+				if((top::SPEED_MIN <= trainSpeed) && (top::SPEED_MAX >= trainSpeed))
 				{
-					//calculate AVR counter register value necessary to produce the required PWM duty cycle
-					dutyCycle = static_cast<int>(top::AVR_COUNTER_MAX * (static_cast<float>(dutyCycle) / top::DUTY_CYCLE_FRACTION));
-
 					//generate I2C START condition on the bus lines 
 					deviceStatus = SetI2CStart(&deviceHandle);
-					//I2C first phase: Address the required device
+
+					//write to first device
 					deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
 					if(success && (FT_OK == deviceStatus))
 					{
 						//if addressing was successful and device returned ACK, write the data to the device
-						deviceStatus = WriteByte(&deviceHandle,dutyCycle,success);
+						deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
 						if(!success || (FT_OK != deviceStatus))
 						{
 							std::cout<<"Error during data transmission"<<std::endl;	
-						}
-						//end communications
-						deviceStatus = SetI2CStop(&deviceHandle);
-						deviceStatus |= SetI2CIdle(&deviceHandle);
-						if(FT_OK != deviceStatus)
-						{
-							std::cout<<"An error occurred while attempting to transmit an I2C STOP condition on the bus lines. A system reset may be required."<<std::endl;
 						}
 					}	
 					else
 					{
 						std::cout<<"Error during address transmission"<<std::endl;
+					}
+					//write to second device
+					deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
+					if(success && (FT_OK == deviceStatus))
+					{
+						//if addressing was successful and device returned ACK, write the data to the device
+						deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
+						if(!success || (FT_OK != deviceStatus))
+						{
+							std::cout<<"Error during data transmission"<<std::endl;	
+						}
+					}	
+					else
+					{
+						std::cout<<"Error during address transmission"<<std::endl;
+					}
+					//end communications
+					deviceStatus = SetI2CStop(&deviceHandle);
+					deviceStatus |= SetI2CIdle(&deviceHandle);
+					if(FT_OK != deviceStatus)
+					{
+						std::cout<<"An error occurred while attempting to transmit an I2C STOP condition on the bus lines. A system reset may be required."<<std::endl;
 					}
 
 				}
@@ -279,7 +302,17 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 				}
 				END:
 					; //goto from catch statement, code jumps here if user enters an invalid input. Effectively a continue statement in the catch block, but goto is used because continue is only allowed in for loops when following MISRA guidelines
+
+
+				//print status report
+				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
+				{
+					std::cout<<"Section "+i+":"<<std::endl;
+					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
+					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
+				}
 			}
+
 		}
 	}
 
