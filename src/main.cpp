@@ -232,7 +232,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 
 				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
 				{
-					std::cout<<"Section "+i+":"<<std::endl;
+					std::cout<<"Section "<<i<<":"<<std::endl;
 					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
 					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
 				}
@@ -307,7 +307,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 				//print status report
 				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
 				{
-					std::cout<<"Section "+i+":"<<std::endl;
+					std::cout<<"Section "<<i<<":"<<std::endl;
 					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
 					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
 				}

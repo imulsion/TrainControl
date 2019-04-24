@@ -24,9 +24,10 @@ namespace top
 	,                 STATUS_OCCUPIED      = 1U       //code for section occupied
 	,                 STATUS_LENGTH        = 4U;      //length of status buffer
 
-	const std::string IN_QUIT              = "quit"       //Expected user input for a quit command
-	,                 IN_RESET             = "reset"       //Expected user input for a reset command
-	,                 IN_HELP              = "help";   //Expected user input for a help command 
+	const std::string IN_QUIT              = "q"       //Expected user input for a quit command
+	,                 IN_RESET             = "r"       //Expected user input for a reset command
+	,                 IN_HELP              = "help"    //Expected user input for a help command 
+	,                 IN_STATUS            = "s";      //Expected user input for a status command
 }
 
 namespace implementation
