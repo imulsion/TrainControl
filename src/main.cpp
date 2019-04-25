@@ -46,6 +46,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 	{
 		sections[i].dutyCycle = top::INITIAL_DUTY_CYCLE;	
 	}
+
         sections[0].owner = top::SLAVE_ONE;
 	sections[1].owner = top::SLAVE_ONE;
 	sections[2].owner = top::SLAVE_TWO;
@@ -87,7 +88,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			}
 			else
 			{
-				std::cout<<"Enter a number between 0 and 99 to adjust the duty cycle of the PWM. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
+				std::cout<<"Enter a number between 0 and 99 to adjust the train speed. Enter q to quit and r for a system reset. Enter help to display this message."<<std::endl;
 
 			}
 		}
@@ -106,7 +107,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			mutex.unlock();
 		}
 		success = false;
-
+		
 		//gather status data
 		deviceStatus = SetI2CStart(&deviceHandle);
 		if(FT_OK == deviceStatus)
@@ -153,7 +154,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 			std::cout<<"Error: Could not start I2C communications when updating status buffer"<<std::endl;
 		}
 
-                deviceStatus = SetI2CStop(&deviceHandle);
+        deviceStatus = SetI2CStop(&deviceHandle);
 		if(FT_OK != deviceStatus)
 		{
 			std::cout<<"Error while terminating communications with first slave"<<std::endl;
@@ -203,7 +204,11 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 		{
 			std::cout<<"Error: Could not start I2C communications when updating status buffer"<<std::endl;
 		}
-
+		        deviceStatus = SetI2CStop(&deviceHandle);
+		if(FT_OK != deviceStatus)
+		{
+			std::cout<<"Error while terminating communications with first slave"<<std::endl;
+		}
 
 
 		
@@ -232,9 +237,9 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 
 				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
 				{
-					std::cout<<"Section "<<i<<":"<<std::endl;
-					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
-					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
+					std::cout<<"Section "<<unsigned(i)<<":"<<std::endl;
+					std::cout<<"      Occupancy status: "<<sections[i].occupied<<std::endl;
+					std::cout<<"      Duty cycle:       "<<unsigned(sections[i].dutyCycle)<<std::endl;
 				}
 			}
 			else
@@ -307,9 +312,9 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 				//print status report
 				for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
 				{
-					std::cout<<"Section "<<i<<":"<<std::endl;
-					std::cout<<"      Occupancy status: "+sections[i].occupied<<std::endl;
-					std::cout<<"      Duty cycle:       "+sections[i].dutyCycle<<std::endl;
+					std::cout<<"Section "<<unsigned(i)<<":"<<std::endl;
+					std::cout<<"      Occupancy status: "<<sections[i].occupied<<std::endl;
+					std::cout<<"      Duty cycle:       "<<unsigned(sections[i].dutyCycle)<<std::endl;
 				}
 			}
 

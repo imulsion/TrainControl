@@ -1,5 +1,5 @@
 @echo off
-cd build
+cd bin
 echo on
 main
 @echo off

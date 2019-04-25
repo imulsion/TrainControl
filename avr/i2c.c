@@ -82,7 +82,7 @@ ISR(I2C_vect)
 					I2C_CONTROL_REGISTER |= I2C_TWSTO_MASK;
 					break;
 			}
-
+		break;
 		//Last byte sent has been received, NACK returned. Transmission will terminate.
 		case I2C_READING_NACK:
 			//transmission will terminate, regardless of whether all the required bytes have been requested by master. 
