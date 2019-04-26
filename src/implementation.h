@@ -65,7 +65,7 @@ namespace mpsse_config
 	,		     DISABLE_LOOPBACK 		         = 0x85U;                                //command to disable internal loopback
 	
 	//magic numbers for MPSSE clock configuration
-	constexpr uint16_t   CLK_DIVIDER 		         = 0x0027U;                              //value used to calculate clock divider high and low bytes. Do not change high/low bytes directly, change this value to change clock divider value
+	constexpr uint16_t   CLK_DIVIDER 		         = 0x0050U;                              //value used to calculate clock divider high and low bytes. Do not change high/low bytes directly, change this value to change clock divider value
 	constexpr uint8_t    CLOCK_DIVIDER_HIGH_BYTE 	         = (CLK_DIVIDER >> 8U) & 0xFFU           //clock divider high and low bytes
 	,		     CLOCK_DIVIDER_LOW_BYTE              = CLK_DIVIDER & 0xFFU
 	,		     CMD_SET_DIVIDER 		         = 0x86U;                                //command to set the clock divider value
@@ -110,10 +110,10 @@ namespace read
 	,		    CMD_FALLING_CLK                         = 0x13U                                 //Command to clock bits out on falling clock edges 
 	,		    NAK_BYTE 		                 = 0xFFU                                 //When reading over I2C, the master must send a NAK before issuing a STOP command 
 	,                   ACK_BYTE                             = 0x00U                                 //ACK byte for multiple byte reads
-	,		    ADBUS_DATA	                         = 0xDEU                                 //When written to ADBUS, this value will pull SCL low while releasing SDA 
+	,		    ADBUS_DATA                         = 0xDEU                                 //When written to ADBUS, this value will pull SCL low while releasing SDA 
 	,		    MPSSE_SEND_IMMEDIATE_COMMAND         = 0x87U                                 //Command that instructs the MPSSE to immediately flush its data buffer back to the host PC
 	,                   MAX_QUEUE_LENGTH                     = 1U;                                   //Maximum number of bytes expected to be read 
-	constexpr DWORD     BYTE_READ_TIMEOUT                    = 500;                                  //Read timeout in ms
+	constexpr DWORD     BYTE_READ_TIMEOUT                    = 5000;                                  //Read timeout in ms
 }
 
 //magic numbers for writing a byte
@@ -128,7 +128,7 @@ namespace write
 	,		    ACK_MASK 		                 = 0x01U                                 //Mask to extract ACK bit from data byte
 	,		    ACK_VALUE		                 = 0x00U                                 //Value of the ACK bit (0) as opposed to NAK (1)
 	,                   MAX_QUEUE_LENGTH                     = 1U;                                   //Maximum number of bytes expected to be read 
-	constexpr DWORD     BYTE_WRITE_TIMEOUT	                 = 500;                                  //Write timeout in ms
+	constexpr DWORD     BYTE_WRITE_TIMEOUT	                 = 5000;                                  //Write timeout in ms
 }
 
 //magic numbers for addressing

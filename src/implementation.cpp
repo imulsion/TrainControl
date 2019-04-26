@@ -350,55 +350,88 @@ FT_STATUS ReadSequence(FT_HANDLE* handle,uint8_t bytesToRead, uint8_t* data, boo
 		DWORD bytesRead;
 		DWORD bytesSent;
         	
-		for(uint8_t i = 0;i<bytesToRead-1;i++)
-		{
-			txBuffer[bytesToSend++] = read::READ_DATA_COMMAND;
-                        txBuffer[bytesToSend++] = read::READ_LENGTH;
-			txBuffer[bytesToSend++] = read::READ_LENGTH;
-                        txBuffer[bytesToSend++] = read::CMD_FALLING_CLK;
-                        txBuffer[bytesToSend++] = read::READ_LENGTH;
-			txBuffer[bytesToSend++] = read::ACK_BYTE;
-		}
+
+		txBuffer[bytesToSend++] = read::READ_DATA_COMMAND;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::READ_LENGTH;
+        txBuffer[bytesToSend++] = read::CMD_FALLING_CLK;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::ACK_BYTE;
+		txBuffer[bytesToSend++] = i2c::ADBUS_SET_DIRECTION_COMMAND; 
+		txBuffer[bytesToSend++] = read::ADBUS_DATA; 
+		txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG;
+		
+		txBuffer[bytesToSend++] = read::READ_DATA_COMMAND;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::READ_LENGTH;
+        txBuffer[bytesToSend++] = read::CMD_FALLING_CLK;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::ACK_BYTE;
+		txBuffer[bytesToSend++] = i2c::ADBUS_SET_DIRECTION_COMMAND; 
+		txBuffer[bytesToSend++] = read::ADBUS_DATA; 
+		txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG;
+		
+		txBuffer[bytesToSend++] = read::READ_DATA_COMMAND;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::READ_LENGTH;
+        txBuffer[bytesToSend++] = read::CMD_FALLING_CLK;
+        txBuffer[bytesToSend++] = read::READ_LENGTH;
+		txBuffer[bytesToSend++] = read::ACK_BYTE;
+		txBuffer[bytesToSend++] = i2c::ADBUS_SET_DIRECTION_COMMAND; 
+		txBuffer[bytesToSend++] = read::ADBUS_DATA; 
+		txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG;
+
 		txBuffer[bytesToSend++] = read::READ_DATA_COMMAND;
 		txBuffer[bytesToSend++] = read::READ_LENGTH;
 		txBuffer[bytesToSend++] = read::READ_LENGTH;
 		txBuffer[bytesToSend++] = read::CMD_FALLING_CLK;
 		txBuffer[bytesToSend++] = read::READ_LENGTH;
 		txBuffer[bytesToSend++] = read::NAK_BYTE; //end transmission
-
 		txBuffer[bytesToSend++] = i2c::ADBUS_SET_DIRECTION_COMMAND; 
 		txBuffer[bytesToSend++] = read::ADBUS_DATA; 
 		txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG; 
+		
 		txBuffer[bytesToSend++] = read::MPSSE_SEND_IMMEDIATE_COMMAND; 
+		//read 3 bytes in, returning ACK
 		error = FT_Write(*handle, txBuffer, bytesToSend, &bytesSent);
 
 		DWORD queueLength = 0;
 		DWORD readTimeout = 0;	
 		
-
-		error = FT_GetQueueStatus(*handle, &queueLength); //read the number of bytes in the queue
-
-		//wait until timeout, an error, or a byte is waiting to be read
-		while ((queueLength < bytesToRead) && (FT_OK == error) && (readTimeout < read::BYTE_READ_TIMEOUT))
+		if(FT_OK == error)
 		{
-			error = FT_GetQueueStatus(*handle, &queueLength); 
-			readTimeout ++;
-		}
-		if ((FT_OK == error) && (readTimeout < read::BYTE_READ_TIMEOUT))
-		{
-			//read queued bytes
-			error = FT_Read(*handle, &inputBuffer, queueLength, &bytesRead);
-			//copy result to array outside the function
-		        for(uint8_t i = 0;i<implementation::RXBUFFER_LENGTH;i++)
+			error = FT_GetQueueStatus(*handle, &queueLength); //read the number of bytes in the queue
+
+			//wait until timeout, an error, or a byte is waiting to be read
+			while ((queueLength < bytesToRead) && (FT_OK == error) && (readTimeout < read::BYTE_READ_TIMEOUT))
 			{
-				data[i] = inputBuffer[i];
+				error = FT_GetQueueStatus(*handle, &queueLength); 
+				readTimeout ++;
 			}
-			//read was successful
-			success = true; 
+			if ((FT_OK == error) && (readTimeout < read::BYTE_READ_TIMEOUT))
+			{
+				//read queued bytes
+				error = FT_Read(*handle, &inputBuffer, queueLength, &bytesRead);
+				//copy result to array outside the function
+				for(uint8_t i = 0;i<implementation::RXBUFFER_LENGTH;i++)
+				{
+					data[i] = inputBuffer[i];
+				}
+				//read was successful
+				success = true; 
+			}
+			else
+			{
+				//read failed due to an error or timeout
+				//debug
+				std::cout<<"Timeout or other error; code: "<<error<<std::endl; 
+				success = false;
+			}
 		}
 		else
 		{
-			//read failed due to an error or timeout
+			//debug
+			std::cout<<"Error code is "<<error<<std::endl;
 			success = false;
 		}
 	}
