@@ -49,6 +49,7 @@ ISR(I2C_vect)
 		//AVR has been addressed with SLA+R, PC is requesting a status report
 		case I2C_ADDRESSED_R:
 			readState = I2C_SECTION_ONE_OCCUPANCY;
+			//debug
 			I2C_DATA_REGISTER = sectionOnePtr->trainInSection;
 			break;
 
@@ -115,7 +116,17 @@ ISR(I2C_vect)
  */ 
 ISR(INT0_vect) 
 {
-	sectionOnePtr -> trainInSection = SECTION_OCCUPANCY_MASK & ~(sectionOnePtr -> trainInSection); //toggle occupancy status of the section
+	uint8_t pinStatus = PIND; //get section occupation status
+
+	//set SectionT status based on section occupation
+	if(INT0_SECTION_SENSE_MASK == (INT0_SECTION_SENSE_MASK & pinStatus))
+	{
+                sectionOnePtr->trainInSection = SECTION_OCCUPIED;
+	}
+	else
+	{
+		sectionOnePtr->trainInSection = SECTION_FREE;
+	}
 }
 
 /*
@@ -126,7 +137,17 @@ ISR(INT0_vect)
  */ 
 ISR(INT1_vect)
 {
-	sectionTwoPtr -> trainInSection = SECTION_OCCUPANCY_MASK & ~(sectionTwoPtr -> trainInSection); //toggle occupancy status of the section
+	uint8_t pinStatus = PIND; //get section occupation status
+
+	//set SectionT status based on section occupation
+	if(INT1_SECTION_SENSE_MASK == (INT1_SECTION_SENSE_MASK & pinStatus))
+	{
+                sectionTwoPtr->trainInSection = SECTION_OCCUPIED;
+	}
+	else
+	{
+		sectionTwoPtr->trainInSection = SECTION_FREE;
+	}
 }
 
 /*****************************************************************************************
@@ -139,7 +160,7 @@ int main (void)
 	sectionOnePtr = &sectionOne;
 	sectionTwoPtr = &sectionTwo;
 	sectionOne.dutyCycle = PWM_INITIAL_DUTY_CYCLE;
-	sectionOne.dutyCycle = PWM_INITIAL_DUTY_CYCLE;
+	sectionTwo.dutyCycle = PWM_INITIAL_DUTY_CYCLE;
 	DeviceInit();//initialise internal registers and set up device	
 	
        	sei();//enable global interrupts 
@@ -152,6 +173,7 @@ int main (void)
 		{
 			cli(); //disable interrupts while dealing with interrupt modifiable data
 			PWM_COUNTER_REGISTER = globalData;//change PWM duty cycle
+			sectionOne.dutyCycle = globalData;//semi-debug, this is just a test
 			dataReady = NOT_DATA_WAITING;
 			sei();
 		}

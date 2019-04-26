@@ -75,8 +75,8 @@
 //struct for storing data about a section owned by the controller
 typedef struct
 {
-	uint8_t trainInSection;
-	uint8_t dutyCycle;
+	volatile uint8_t trainInSection;
+	volatile uint8_t dutyCycle;
 }SectionT; 
 
 //enum describing a simple state machine for the correct ordering of transmission of status bytes to the computer
