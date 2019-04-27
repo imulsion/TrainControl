@@ -155,8 +155,8 @@ ISR(INT1_vect)
  *****************************************************************************************/
 int main (void)
 {
-	SectionT sectionOne;
-	SectionT sectionTwo;
+	volatile SectionT sectionOne;
+	volatile SectionT sectionTwo;
 	sectionOnePtr = &sectionOne;
 	sectionTwoPtr = &sectionTwo;
 	sectionOne.dutyCycle = PWM_INITIAL_DUTY_CYCLE;
