@@ -106,6 +106,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 				mutex.unlock();
 			}
 			success = false;
+			
 			deviceStatus = SetI2CIdle(&deviceHandle);
 			//gather status data
 			deviceStatus = SetI2CStart(&deviceHandle);
@@ -278,31 +279,51 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						}	
 						else
 						{
-							std::cout<<"Error during address transmission"<<std::endl;
+							std::cout<<"Error during slave one address transmission, code "<<deviceStatus<<std::endl;
 						}
-						//write to second device
-						deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
-						if(success && (FT_OK == deviceStatus))
-						{
-							//if addressing was successful and device returned ACK, write the data to the device
-							deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
-							if(!success || (FT_OK != deviceStatus))
-							{
-								std::cout<<"Error during data transmission"<<std::endl;	
-							}
-						}	
-						else
-						{
-							std::cout<<"Error during address transmission"<<std::endl;
-						}
-						//end communications
-						deviceStatus = SetI2CStop(&deviceHandle);
-						deviceStatus |= SetI2CIdle(&deviceHandle);
+						
+						//generate repeated start condition
+						deviceStatus = SetI2CIdle(&deviceHandle);
+						deviceStatus |= SetI2CStart(&deviceHandle);
 						if(FT_OK != deviceStatus)
 						{
-							std::cout<<"An error occurred while attempting to transmit an I2C STOP condition on the bus lines. A system reset may be required."<<std::endl;
+							std::cout<<"Could not generate a repeated start. Communication aborted."<<std::endl;
+							deviceStatus = SetI2CStop(&deviceHandle);
+							if(FT_OK != deviceStatus)
+							{
+								std::cout<<"Error: STOP condition could not be sent."<<std::endl;
+							}
 						}
+						else
+						{
+						
+							//write to second device
+							deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
+							if(success && (FT_OK == deviceStatus))
+							{
+								//if addressing was successful and device returned ACK, write the data to the device
+								deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
+								if(!success || (FT_OK != deviceStatus))
+								{
+									std::cout<<"Error during data transmission"<<std::endl;	
+								}
+								else
+								{
+									std::cout<<"Speed updated successfully"<<std::endl;
+								}
+							}	
+							else
+							{
+								std::cout<<"Error during slave two address transmission, code "<<deviceStatus<<std::endl;
+							}
+							//end communications
+							deviceStatus = SetI2CStop(&deviceHandle);
+							if(FT_OK != deviceStatus)
+							{
+								std::cout<<"An error occurred while attempting to transmit an I2C STOP condition on the bus lines. A system reset may be required."<<std::endl;
+							}
 
+						}
 					}
 					else
 					{
@@ -310,15 +331,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 					}
 					END:
 						; //goto from catch statement, code jumps here if user enters an invalid input. Effectively a continue statement in the catch block, but goto is used because continue is only allowed in for loops when following MISRA guidelines
-
-
-					//print status report
-					for(uint8_t i = 0;i<top::NUM_SECTIONS;i++)
-					{
-						std::cout<<"Section "<<unsigned(i)<<":"<<std::endl;
-						std::cout<<"      Occupancy status: "<<sections[i].occupied<<std::endl;
-						std::cout<<"      Duty cycle:       "<<unsigned(sections[i].dutyCycle)<<std::endl;
-					}
+					
 				}
 
 			}

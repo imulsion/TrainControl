@@ -34,7 +34,8 @@ namespace implementation
 {
 	constexpr uint8_t    TXBUFFER_LENGTH                     = 64U                                   //length of transmission buffer
 	,                    RXBUFFER_LENGTH                     = 64U                                   //length of reception buffer
-        ,                    COMMAND_REPEAT                      = 4U;                                   //number of times to repeat commands to the MPSSE to ensure they are received
+		,                    COMMAND_REPEAT                      = 4U;                                   //number of times to repeat commands to the MPSSE to ensure they are received
+	constexpr uint32_t	     DELAY_LENGTH                        = 1000000U;                       //used to create a delay
 }
 namespace mpsse_init
 {
@@ -73,7 +74,7 @@ namespace mpsse_config
 }
 namespace system_reset
 {
-	constexpr uint8_t    SET_AVR_RESET_LOW                   = 0xEFU;                                //ADBUS value that will pull GPIO3 (blue) wire low allowing for AVR reset pulse
+	constexpr uint8_t    SET_AVR_RESET_LOW                   = 0xF7U;                                //ADBUS value that will pull TMS (brown) wire low allowing for AVR reset pulse
 }
 namespace i2c
 {

@@ -125,10 +125,11 @@ FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 
 FT_STATUS SystemReset(FT_HANDLE* handle)
 {
+
 	FT_STATUS error;
 	if(NULL == handle)
 	{
-		return FT_INVALID_HANDLE;
+		error = FT_INVALID_HANDLE;
 	}
 	else
 	{
@@ -136,8 +137,7 @@ FT_STATUS SystemReset(FT_HANDLE* handle)
 		DWORD bytesSent; //return param to confirm number of bytes successfully sent
 		DWORD dwCount;
 		uint8_t txBuffer[implementation::TXBUFFER_LENGTH];
-		
-		//write a 1 to the AVR reset line
+
 		for(dwCount = 0; dwCount<implementation::COMMAND_REPEAT; dwCount++)
 		{
 			txBuffer[bytesToSend++] = i2c::ADBUS_SET_DIRECTION_COMMAND;
@@ -151,6 +151,7 @@ FT_STATUS SystemReset(FT_HANDLE* handle)
 			txBuffer[bytesToSend++] = system_reset::SET_AVR_RESET_LOW;
 			txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG;
 		}
+		for(dwCount=0;dwCount<implementation::DELAY_LENGTH;dwCount++);//waste some time before returning line high
 		//return the line high 
 		for(dwCount = 0; dwCount<implementation::COMMAND_REPEAT; dwCount++)
 		{
@@ -158,6 +159,7 @@ FT_STATUS SystemReset(FT_HANDLE* handle)
 			txBuffer[bytesToSend++] = i2c::SET_LINES_HIGH;
 			txBuffer[bytesToSend++] = i2c::ADBUS_LINE_CONFIG;
 		}
+
 		error = FT_Write(*handle,txBuffer,bytesToSend,&bytesSent);
 		
 	}
