@@ -169,22 +169,30 @@ typedef struct
 }SectionT;
 
 
-//TODO: Function header comments
-void GetUserInput(std::string& input, bool& flag, std::mutex& mutex);
-void Run(std::string& input, bool& flag, std::mutex& mutex);
-/* Function: CableInit
+/* Thread function for gathering user input
  *
- * Establishes a connection to the cable connected to a USB port and sets up the USB device parameters for communication with the chip.
+ * Parameter[out]: input				String used to transfer user input data between threads
+ * Parameter[out]: flag					Flag to indicate data change
+ * Parameter[inout]:  mutex 				Shared mutex to protect shared data
+ * Returns:        void
+ */
+void GetUserInput(std::string& input, bool& flag, std::mutex& mutex);
+
+/* Thread function for gathering user input
+ *
+ * Parameter[in]: input				String used to transfer user input data between threads
+ * Parameter[in]: flag					Flag to indicate data change
+ * Parameter[inout]:  mutex 				Shared mutex to protect shared data
+ * Returns:        void
+ */
+void Run(std::string& input, bool& flag, std::mutex& mutex);
+
+/* Establishes a connection to the cable connected to a USB port and sets up the USB device parameters for communication with the chip.
  *
  * Parameter[out]: handle               Pointer to a FT_HANDLE used for accessing the device
  * Returns:        FT_STATUS            FT_STATUS enum indicating the error state of the function. If the function executes successfully it will return the value FT_OK
  */
 FT_STATUS CableInit(FT_HANDLE* handle);
-
-//TODO: Decide if verify mode needed 
-#ifdef VERIFY_MODE
-FT_STATUS MPSSEVerify();
-#endif
 
 /* Sends MPSSE configuration parameters to the on-board FT232H chip, setting up the chip for I2C communication
  *
@@ -234,7 +242,14 @@ FT_STATUS SetI2CStop(FT_HANDLE* handle);
  */
 FT_STATUS ReadByte(FT_HANDLE* handle,uint8_t& result,bool& success);
 
-//TODO: Comment header
+/* Instructs the FT232H chip to read multiple bytes of data from the AVR
+ *
+ * Parameter[in]  handle                Pointer to a FT_HANDLE used for accessing the device
+ * Parameter[in]  bytesToRead           The number of bytes to be read
+ * Parameter[out] data                  Return variable for data to be read from
+ * Parameter[out] success               Reference to a flag that indicates whether the operation was successful
+ * Returns:       FT_STATUS             FT_STATUS enum indicating the error state of the function. If the function executes successfully it will return the value FT_OK
+ */
 FT_STATUS ReadSequence(FT_HANDLE* handle, uint8_t bytesToRead, uint8_t* data, bool& success);
 
 /* Instructs the FT232H chip to write a byte of data onto the I2C bus lines 

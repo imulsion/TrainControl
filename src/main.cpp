@@ -65,14 +65,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 	}
 	else
 	{
-#if 0
-		//TODO: Code function if necessary
-		//initStatus = MPSSEVerify();
-		if(FT_OK != initStatus)
-		{
-			std::cout<<"Error: MPSSE mode did not verify successfully. Program terminated"<<std::endl;
-		}
-#endif
+
 	        //configure on-chip MPSSE module	
 		deviceStatus = MPSSEConfig(&deviceHandle);
 		if(FT_OK != deviceStatus)

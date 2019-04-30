@@ -69,13 +69,7 @@ FT_STATUS CableInit(FT_HANDLE* handle)
 	return error;
 }
 
-#ifdef VERIFY_MODE
-//TODO: Implement later (necessary?)
- FT_STATUS MPSSEVerify()
-{
-	DWORD bytesToSend = 0;
-}
-#endif 
+ 
 //configure the MPSSE settings on chip
 FT_STATUS MPSSEConfig(FT_HANDLE* handle)
 {
@@ -427,15 +421,13 @@ FT_STATUS ReadSequence(FT_HANDLE* handle,uint8_t bytesToRead, uint8_t* data, boo
 			else
 			{
 				//read failed due to an error or timeout
-				//debug
 				std::cout<<"Timeout or other error; code: "<<error<<std::endl; 
 				success = false;
 			}
 		}
 		else
 		{
-			//debug
-			std::cout<<"Error code is "<<error<<std::endl;
+			std::cout<<"Write error, code "<<error<<std::endl;
 			success = false;
 		}
 	}
