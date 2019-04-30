@@ -18,7 +18,7 @@ volatile uint8_t sectionValue;
 volatile uint8_t dataReady;                                //flag to indicate data received
 
 volatile I2CReadStateT readState = I2C_IDLE;
-volatile I2CWriteStateT writeState = I2C_IDLE;
+volatile I2CWriteStateT writeState = I2C_W_IDLE;
 
 
 /*****************************************************************************************
@@ -105,7 +105,7 @@ ISR(I2C_vect)
 			else if(I2C_DUTY_VALUE == writeState)
 			{
 				sectionValue = I2C_DATA_REGISTER;		
-				writeState = I2C_IDLE;
+				writeState = I2C_W_IDLE;
 				dataReady = DATA_WAITING;
 			}
 			else //impossible state - if this is entered, master is asking for too much data. NACK it
@@ -225,7 +225,7 @@ void DeviceInit(void)
 	PWM_CONTROL_REGISTER_1A = PWM_CONTROL_CONFIG_1A;
 	PWM_CONTROL_REGISTER_1B = PWM_CONTROL_CONFIG_1B;
 	PWM_CONTROL_REGISTER_TWO = PWM_CONTROL_CONFIG_TWO; 
-	PWM_COUNTER_REGISTER_ONE = PWM_INITIAL_DUTY_CYCLE;
+	PWM_COUNTER_REGISTER_1A = PWM_INITIAL_DUTY_CYCLE;
 	PWM_COUNTER_REGISTER_TWO = PWM_INITIAL_DUTY_CYCLE;
 	
 	

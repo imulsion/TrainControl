@@ -101,7 +101,7 @@ typedef enum
 
 typedef enum
 {
-	I2C_IDLE,
+	I2C_W_IDLE,
 	I2C_SECTION_SELECT,
 	I2C_DUTY_VALUE,
 }I2CWriteStateT;
