@@ -50,9 +50,16 @@
 
 //PWM constant definitions
 #define PWM_CONTROL_REGISTER_TWO         TCCR2             //Alias for 2nd PWM channel control register
-#define PWM_PRESCALER                    1U                //Value for the PWM prescaler. Equation for PWM frequency is F = F_CPU/(510*PWM_PRESCALER)
-#define PWM_CONTROL_CONFIG               0x61U             //PWM control register configuration bits 
-#define PWM_COUNTER_REGISTER             OCR2              //Internal counter register used by the PWM hardware. The value written to this register determines the duty cycle of the PWM waveform
+#define PWM_PRESCALER_TWO                1U                //Value for the PWM prescaler. Equation for PWM frequency is F = F_CPU/(510*PWM_PRESCALER)
+#define PWM_CONTROL_CONFIG_TWO           0x61U             //PWM control register configuration bits 
+#define PWM_COUNTER_REGISTER_TWO         OCR2              //Internal counter register used by the PWM hardware. The value written to this register determines the duty cycle of the PWM waveform
+
+#define PWM_CONTROL_REGISTER_1A          TCCR1A            //1st PWM channel control register A
+#define PWM_CONTROL_REGISTER_1B          TCCR1B            //2nd PWM channel control register B
+#define PWM_CONTROL_CONFIG_1A            0x51              //Control register A config 
+#define PWM_CONTROL_CONFIG_1B            0x01              //Control register B config
+#define PWM_COUNTER_REGISTER_1A          OCR1A             //Internal counter register for the first channel. Note: This register is 16 bits long
+
 #define PWM_INITIAL_DUTY_CYCLE           128U              //Initial duty cycle value (50%)
 
 //External interrupt definitions
@@ -65,6 +72,9 @@
 #define SECTION_OCCUPIED                 0x01U             //indicates an occupied section
 #define SECTION_FREE                     0x00U             //indicates an unoccupied section
 #define SECTION_OCCUPANCY_MASK           0x01U             //mask for toggling between SECTION_OCCUPIED and SECTION_FREE
+
+//section select
+#define SECTION_ONE                      0x01U             //1st section ID
 
 
 
@@ -88,6 +98,13 @@ typedef enum
 	I2C_SECTION_TWO_OCCUPANCY,
 	I2C_SECTION_TWO_DCYCLE,
 }I2CReadStateT;
+
+typedef enum
+{
+	I2C_IDLE,
+	I2C_SECTION_SELECT,
+	I2C_DUTY_VALUE,
+}I2CWriteStateT;
 
 
 /*****************************************************************************************

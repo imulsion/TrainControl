@@ -13,10 +13,12 @@
 volatile SectionT* sectionOnePtr;
 volatile SectionT* sectionTwoPtr;
 
-volatile uint8_t globalData;                               //used for receiving I2C data
+volatile uint8_t sectionSelect;                               //used for receiving I2C data
+volatile uint8_t sectionValue;
 volatile uint8_t dataReady;                                //flag to indicate data received
 
 volatile I2CReadStateT readState = I2C_IDLE;
+volatile I2CWriteStateT writeState = I2C_IDLE;
 
 
 /*****************************************************************************************
@@ -44,12 +46,12 @@ ISR(I2C_vect)
 
 		//AVR has been addressed with SLA+W, hardware will wait for next event, no software action required
 		case I2C_ADDRESSED_W:
+			writeState = I2C_SECTION_SELECT;//prepare to receive section select 
 			break;
 
 		//AVR has been addressed with SLA+R, PC is requesting a status report
 		case I2C_ADDRESSED_R:
 			readState = I2C_SECTION_ONE_OCCUPANCY;
-			//debug
 			I2C_DATA_REGISTER = sectionOnePtr->trainInSection;
 			break;
 
@@ -95,8 +97,22 @@ ISR(I2C_vect)
 
 		//AVR is being written to over I2C, read the data
 		case I2C_WRITING:
-			globalData = I2C_DATA_REGISTER;//copy received data to global data variable
-			dataReady = DATA_WAITING;
+			if(I2C_SECTION_SELECT == writeState)
+			{
+				sectionSelect = I2C_DATA_REGISTER;//copy received data to global data variable
+				writeState = I2C_DUTY_VALUE;
+			}
+			else if(I2C_DUTY_VALUE == writeState)
+			{
+				sectionValue = I2C_DATA_REGISTER;		
+				writeState = I2C_IDLE;
+				dataReady = DATA_WAITING;
+			}
+			else //impossible state - if this is entered, master is asking for too much data. NACK it
+			{
+				I2C_CONTROL_REGISTER |= I2C_TWSTO_MASK;
+			}
+
 			break;
 
                 //unexpected status code
@@ -172,9 +188,18 @@ int main (void)
 		if(DATA_WAITING == dataReady)
 		{
 			cli(); //disable interrupts while dealing with interrupt modifiable data
-			PWM_COUNTER_REGISTER = globalData;//change PWM duty cycle
-			sectionOne.dutyCycle = globalData;//semi-debug, this is just a test
 			dataReady = NOT_DATA_WAITING;
+			if(SECTION_ONE == sectionSelect)
+			{
+				sectionOne.dutyCycle = sectionValue;
+                                PWM_COUNTER_REGISTER_1A = sectionOne.dutyCycle;
+			}
+			else
+			{
+				sectionTwo.dutyCycle = sectionValue;
+				PWM_COUNTER_REGISTER_TWO = sectionTwo.dutyCycle;
+			}
+			
 			sei();
 		}
 	}
@@ -187,7 +212,7 @@ int main (void)
 void DeviceInit(void)
 {
 	//global variables
-	globalData = INITIAL_DATA;
+	sectionSelect = INITIAL_DATA;
 	dataReady = NOT_DATA_WAITING;
 	
 	//port registers and initial value setup 
@@ -197,8 +222,11 @@ void DeviceInit(void)
 	PORTD &= REGISTER_CLEAR_MASK;
 
 	//PWM initialisation
-	PWM_CONTROL_REGISTER_TWO = PWM_CONTROL_CONFIG; 
-	PWM_COUNTER_REGISTER = PWM_INITIAL_DUTY_CYCLE;
+	PWM_CONTROL_REGISTER_1A = PWM_CONTROL_CONFIG_1A;
+	PWM_CONTROL_REGISTER_1B = PWM_CONTROL_CONFIG_1B;
+	PWM_CONTROL_REGISTER_TWO = PWM_CONTROL_CONFIG_TWO; 
+	PWM_COUNTER_REGISTER_ONE = PWM_INITIAL_DUTY_CYCLE;
+	PWM_COUNTER_REGISTER_TWO = PWM_INITIAL_DUTY_CYCLE;
 	
 	
 	//I2C initialisation
