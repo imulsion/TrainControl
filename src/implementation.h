@@ -142,11 +142,22 @@ namespace address
 
 namespace train
 {
-	constexpr float     TRAIN1_MODIFIER                      = 1.089f; //modifiers for relating user set speed to section duty cycle
-	,                   TRAIN2_MODIFIER                      = 0.873f;
-	,                   TRAIN3_MODIFIER                      = 0.950f;
+	constexpr float     TRAIN1_MODIFIER                      = 1.089f //modifiers for relating user set speed to section duty cycle
+	,                   TRAIN2_MODIFIER                      = 0.873f
+	,                   TRAIN3_MODIFIER                      = 0.950f
 	,                   TRAIN4_MODIFIER                      = 1.113f;
+	constexpr uint8_t   SECTION1_SELECT                      = 0x01U  //instruction to select a section
+	,                   SECTION2_SELECT                      = 0x02U;
 }
+
+typedef enum
+{
+	Train1,
+	Train2,
+	Train3,
+	Train4,
+	None,
+}TrainT;
 
 
 typedef struct
@@ -154,6 +165,7 @@ typedef struct
 	uint8_t dutyCycle;
 	bool occupied;
 	uint8_t owner;
+	TrainT trainInSection;
 }SectionT;
 
 

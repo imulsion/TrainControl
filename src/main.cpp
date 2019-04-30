@@ -138,19 +138,19 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 								if(success)
 								{
 									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
-									switch(section[0].trainInSection)
+									switch(sections[0].trainInSection)
 									{
 										case Train1:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train2:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train3:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train4:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										default:
 											std::cout<<"System error: Impossible state reached."<<std::endl;
@@ -184,20 +184,20 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
 								if(success)
 								{
-									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION2_SELECT,success);
 									switch(sections[1].trainInSection)
 									{
 										case Train1:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train2:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train3:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train4:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										default:
 											std::cout<<"System error: Impossible state reached."<<std::endl;
@@ -269,16 +269,16 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 									switch(sections[2].trainInSection)
 									{
 										case Train1:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train2:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train3:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train4:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										default:
 											std::cout<<"System error: Impossible state reached."<<std::endl;
@@ -310,20 +310,20 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
 								if(success)
 								{
-									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION2_SELECT,success);
 									switch(sections[3].trainInSection)
 									{
 										case Train1:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train2:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train3:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										case Train4:
-											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((train::TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
 											break;
 										default:
 											std::cout<<"System error: Impossible state reached."<<std::endl;
