@@ -36,6 +36,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 	FT_HANDLE deviceHandle;                                //Handle to the device 
 	bool success = false;                                  //Flag to indicate success of data transmission functions
 	uint8_t trainSpeed = 0U;                                //PWM duty cycle
+	uint8_t speedInput = 0U;                               //temporary used for testing speed input
 	bool commsFlag = false;                                //flag for indicating user input waiting to be processed, essentially a copy of the mutex protected flag parameter
 	std::string userInput = "";                            //local copy of mutex protected user input string
 
@@ -129,8 +130,45 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						}
 						else
 						{
+							if(sections[0].occupied = true)//at this point we know section 0 is unoccupied. So if still true,
+							{			       //train has left the section
+								deviceStatus = SetI2CIdle(&deviceHandle);//generate repeated start
+                                                        	deviceStatus |= SetI2CStart(&deviceHandle);
+							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
+								if(success)
+								{
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									switch(section[0].trainInSection)
+									{
+										case Train1:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train2:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train3:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train4:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										default:
+											std::cout<<"System error: Impossible state reached."<<std::endl;
+											break;
+											
+									}
+									if(!success)
+									{
+										std::cout<<"Speed transmission error"<<std::endl;
+									}
+								}
+							}
 							sections[0].occupied = false;
+							sections[1].trainInSection = sections[0].trainInSection;
+							sections[0].trainInSection = None;
 						}
+
+						
 						sections[0].dutyCycle = statusBuffer[1];
 						
 						if(top::STATUS_OCCUPIED == statusBuffer[2])
@@ -139,7 +177,42 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						}
 						else
 						{
+							if(sections[1].occupied = true)//at this point we know section 1 is unoccupied. So if still true,
+							{			       //train has left the section
+								deviceStatus = SetI2CIdle(&deviceHandle);//generate repeated start
+                                                        	deviceStatus |= SetI2CStart(&deviceHandle);
+							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
+								if(success)
+								{
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									switch(sections[1].trainInSection)
+									{
+										case Train1:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train2:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train3:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train4:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										default:
+											std::cout<<"System error: Impossible state reached."<<std::endl;
+											break;
+											
+									}
+									if(!success)
+									{
+										std::cout<<"Speed transmission error"<<std::endl;
+									}
+								}
+							}
 							sections[1].occupied = false;
+							sections[2].trainInSection = sections[1].trainInSection;
+							sections[1].trainInSection = None;
 						}
 						sections[1].dutyCycle = statusBuffer[3];
 					}
@@ -154,7 +227,9 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 				std::cout<<"Error: Could not start I2C communications when updating status buffer"<<std::endl;
 			}
 
+
 			deviceStatus = SetI2CStop(&deviceHandle);
+
 			if(FT_OK != deviceStatus)
 			{
 				std::cout<<"Error while terminating communications with first slave"<<std::endl;
@@ -183,7 +258,42 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						}
 						else
 						{
+							if(sections[2].occupied = true)//at this point we know section 2 is unoccupied. So if still true,
+							{			       //train has left the section
+								deviceStatus = SetI2CIdle(&deviceHandle);//generate repeated start
+                                                        	deviceStatus |= SetI2CStart(&deviceHandle);
+							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
+								if(success)
+								{
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									switch(sections[2].trainInSection)
+									{
+										case Train1:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train2:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train3:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train4:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										default:
+											std::cout<<"System error: Impossible state reached."<<std::endl;
+											break;
+											
+									}
+									if(!success)
+									{
+										std::cout<<"Speed transmission error"<<std::endl;
+									}
+								}
+							}
 							sections[2].occupied = false;
+							sections[3].trainInSection = sections[2].trainInSection;
+							sections[2].trainInSection = None;
 						}
 						sections[2].dutyCycle = statusBuffer[1];
 						
@@ -193,6 +303,41 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						}
 						else
 						{
+							if(sections[3].occupied = true)//at this point we know section 3 is unoccupied. So if still true,
+							{			       //train has left the section
+								deviceStatus = SetI2CIdle(&deviceHandle);//generate repeated start
+                                                        	deviceStatus |= SetI2CStart(&deviceHandle);
+							        deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
+								if(success)
+								{
+									deviceStatus |= WriteByte(&deviceHandle,train::SECTION1_SELECT,success);
+									switch(sections[3].trainInSection)
+									{
+										case Train1:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN1_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train2:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN2_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train3:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN3_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										case Train4:
+											deviceStatus |= WriteByte(&deviceHandle,static_cast<uint8_t>((TRAIN4_MODIFIER*trainSpeed)*(top::AVR_COUNTER_MAX/top::DUTY_CYCLE_FRACTION)),success);
+											break;
+										default:
+											std::cout<<"System error: Impossible state reached."<<std::endl;
+											break;
+											
+									}
+									if(!success)
+									{
+										std::cout<<"Speed transmission error"<<std::endl;
+									}
+								}
+							}
+							sections[0].trainInSection = sections[3].trainInSection;
+							sections[3].trainInSection = None;
 							sections[3].occupied = false;
 						}
 						sections[3].dutyCycle = statusBuffer[3];
@@ -251,7 +396,7 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 					try
 					{
 						//attempt to convert user input to an integer
-						trainSpeed = std::stoi(input,NULL);
+						speedInput = std::stoi(input,NULL);
 					}
 					catch(const std::invalid_argument& e)
 					{
@@ -261,69 +406,9 @@ void Run(std::string& input, bool& flag, std::mutex& mutex)
 						//one goto allowed per loop in MISRA
 						goto END;
 					}
-					if((top::SPEED_MIN <= trainSpeed) && (top::SPEED_MAX >= trainSpeed))
+					if((top::SPEED_MIN <= speedInput) && (top::SPEED_MAX >= speedInput))
 					{
-						//generate I2C START condition on the bus lines 
-						deviceStatus = SetI2CStart(&deviceHandle);
-
-						//write to first device
-						deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_ONE,false,success);
-						if(success && (FT_OK == deviceStatus))
-						{
-							//if addressing was successful and device returned ACK, write the data to the device
-							deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
-							if(!success || (FT_OK != deviceStatus))
-							{
-								std::cout<<"Error during data transmission"<<std::endl;	
-							}
-						}	
-						else
-						{
-							std::cout<<"Error during slave one address transmission, code "<<deviceStatus<<std::endl;
-						}
-						
-						//generate repeated start condition
-						deviceStatus = SetI2CIdle(&deviceHandle);
-						deviceStatus |= SetI2CStart(&deviceHandle);
-						if(FT_OK != deviceStatus)
-						{
-							std::cout<<"Could not generate a repeated start. Communication aborted."<<std::endl;
-							deviceStatus = SetI2CStop(&deviceHandle);
-							if(FT_OK != deviceStatus)
-							{
-								std::cout<<"Error: STOP condition could not be sent."<<std::endl;
-							}
-						}
-						else
-						{
-						
-							//write to second device
-							deviceStatus |= WriteAddr(&deviceHandle,top::SLAVE_ADDR_TWO,false,success);
-							if(success && (FT_OK == deviceStatus))
-							{
-								//if addressing was successful and device returned ACK, write the data to the device
-								deviceStatus = WriteByte(&deviceHandle,trainSpeed,success);
-								if(!success || (FT_OK != deviceStatus))
-								{
-									std::cout<<"Error during data transmission"<<std::endl;	
-								}
-								else
-								{
-									std::cout<<"Speed updated successfully"<<std::endl;
-								}
-							}	
-							else
-							{
-								std::cout<<"Error during slave two address transmission, code "<<deviceStatus<<std::endl;
-							}
-							//end communications
-							deviceStatus = SetI2CStop(&deviceHandle);
-							if(FT_OK != deviceStatus)
-							{
-								std::cout<<"An error occurred while attempting to transmit an I2C STOP condition on the bus lines. A system reset may be required."<<std::endl;
-							}
-
-						}
+						trainSpeed = speedInput;
 					}
 					else
 					{

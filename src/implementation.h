@@ -140,13 +140,21 @@ namespace address
 	,	            DATA_WRITE_MASK	                 = 0xFEU;                                //Mask for the I2C address when a read is performed
 }
 
+namespace train
+{
+	constexpr float     TRAIN1_MODIFIER                      = 1.089f; //modifiers for relating user set speed to section duty cycle
+	,                   TRAIN2_MODIFIER                      = 0.873f;
+	,                   TRAIN3_MODIFIER                      = 0.950f;
+	,                   TRAIN4_MODIFIER                      = 1.113f;
+}
+
+
 typedef struct
 {
 	uint8_t dutyCycle;
 	bool occupied;
 	uint8_t owner;
 }SectionT;
-
 
 
 //TODO: Function header comments
